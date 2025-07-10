@@ -1,12 +1,16 @@
+// lib/pages/setup_page.dart
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../controllers/game_controller.dart';
-import '../models/role.dart';
-import 'reveal_page.dart';
+import '../models/role_factory.dart';
 import '../widgets/progress_panel.dart';
+import 'reveal_page.dart';
 
 class SetupPage extends ConsumerStatefulWidget {
-  const SetupPage({super.key});
+  const SetupPage({Key? key}) : super(key: key);
+
   @override
   ConsumerState<SetupPage> createState() => _SetupPageState();
 }
@@ -22,13 +26,9 @@ class _SetupPageState extends ConsumerState<SetupPage> {
   }
 
   void _startGame() {
-    final roles = <Role>[
-      Role.merlin(),
-      Role.percival(),
-      Role.loyalServant(),
-      Role.assassin(),
-      Role.morgana(),
-    ]..shuffle();
+    final playerCount = ref.read(gameControllerProvider).players.length;
+    // 根據人數動態產生角色並洗牌
+    final roles = RoleFactory.rolesForCount(playerCount)..shuffle();
     ref.read(gameControllerProvider.notifier).assignRoles(roles);
     Navigator.push(
       context,
@@ -39,6 +39,7 @@ class _SetupPageState extends ConsumerState<SetupPage> {
   @override
   Widget build(BuildContext context) {
     final players = ref.watch(gameControllerProvider.select((s) => s.players));
+
     return Scaffold(
       appBar: const ProgressPanel(),
       body: Padding(
@@ -47,11 +48,18 @@ class _SetupPageState extends ConsumerState<SetupPage> {
           children: [
             TextField(
               controller: _nameCtrl,
-              decoration: const InputDecoration(labelText: '玩家暱稱'),
+              decoration: const InputDecoration(
+                labelText: '玩家暱稱',
+                border: OutlineInputBorder(),
+              ),
               onSubmitted: (_) => _addPlayer(),
             ),
-            ElevatedButton(onPressed: _addPlayer, child: const Text('加入玩家')),
             const SizedBox(height: 12),
+            ElevatedButton(
+              onPressed: _addPlayer,
+              child: const Text('加入玩家'),
+            ),
+            const SizedBox(height: 16),
             Expanded(
               child: ListView.builder(
                 itemCount: players.length,
@@ -61,6 +69,7 @@ class _SetupPageState extends ConsumerState<SetupPage> {
                 ),
               ),
             ),
+            const SizedBox(height: 12),
             FilledButton(
               onPressed: players.length >= 5 ? _startGame : null,
               child: const Text('開始發牌'),
