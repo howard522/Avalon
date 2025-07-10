@@ -8,27 +8,22 @@ import 'proposal_page.dart';
 
 class RevealPage extends ConsumerStatefulWidget {
   const RevealPage({Key? key}) : super(key: key);
-
   @override
   ConsumerState<RevealPage> createState() => _RevealPageState();
 }
 
 class _RevealPageState extends ConsumerState<RevealPage> {
   bool isCardVisible = false;
-
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(gameControllerProvider);
     final player = state.players[state.revealIndex];
-
     return Scaffold(
       appBar: AppBar(title: const Text('身份揭示')),
       body: GestureDetector(
-        behavior: HitTestBehavior.opaque,
         onTap: () {
-          if (!isCardVisible) {
-            setState(() => isCardVisible = true);
-          } else {
+          if (!isCardVisible) setState(() => isCardVisible = true);
+          else {
             ref.read(gameControllerProvider.notifier).incrementReveal();
             setState(() => isCardVisible = false);
             if (state.revealIndex + 1 >= state.players.length) {
@@ -39,6 +34,7 @@ class _RevealPageState extends ConsumerState<RevealPage> {
             }
           }
         },
+        behavior: HitTestBehavior.opaque,
         child: Center(
           child: AnimatedSwitcher(
             duration: const Duration(milliseconds: 300),
@@ -47,22 +43,14 @@ class _RevealPageState extends ConsumerState<RevealPage> {
                     key: const ValueKey('card'),
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(
-                        player.role.name,
-                        style: Theme.of(context).textTheme.headlineLarge,
-                      ),
-                      const SizedBox(height: 8),
+                      Text(player.role.name, style: Theme.of(context).textTheme.headlineLarge),
                       if (player.role is Merlin)
                         Text(
                           '提示：邪惡陣營 = ${state.players.where((p) => p.role.faction == Faction.evil).map((p) => p.name).join(', ')}',
                         ),
                     ],
                   )
-                : Text(
-                    '請將手機交給 ${player.name}',
-                    key: const ValueKey('prompt'),
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
+                : Text('請將手機交給 ${player.name}', key: const ValueKey('prompt'), style: Theme.of(context).textTheme.titleLarge),
           ),
         ),
       ),
