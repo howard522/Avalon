@@ -31,7 +31,7 @@ class RoleFactory {
           const Role.loyalServant(),
           const Role.assassin(),
           const Role.morgana(),
-          const Role.mordred(),
+          const Role.oberon(),
         ];
       case 8:
         return [
