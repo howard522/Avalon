@@ -1,12 +1,12 @@
+// lib/controllers/game_controller.dart
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/game_state.dart';
 import '../models/player.dart';
 import '../models/role.dart';
 
-
-final gameControllerProvider = StateNotifierProvider<GameController, GameState>(
-  (ref) => GameController(),
-);
+final gameControllerProvider =
+    StateNotifierProvider<GameController, GameState>((ref) => GameController());
 
 class GameController extends StateNotifier<GameState> {
   GameController() : super(const GameState());
@@ -49,7 +49,7 @@ class GameController extends StateNotifier<GameState> {
     if (updated.length >= state.proposedTeam.length) {
       final successCount = updated.where((v) => v).length;
       final failCount = updated.length - successCount;
-      // 清空 votes
+      // 清空本輪投票
       state = state.copyWith(missionVotes: <bool>[]);
       // 根據票數進行結算
       recordMissionResult(successCount, failCount);
@@ -58,25 +58,31 @@ class GameController extends StateNotifier<GameState> {
 
   /// 根據票數閾值更新階段和分數
   void recordMissionResult(int successCount, int failCount) {
-    // 更新分數
-    final newGood = state.goodScore + (successCount > failCount ? 1 : 0);
-    final newEvil = state.evilScore + (failCount >= successCount ? 1 : 0);
+    // 計算目前是第幾回合 (從1開始)
+    final round = state.goodScore + state.evilScore + 1;
+    // 第4回合且人數>=7時需2張失敗票才算失敗，否則1張即算失敗
+    final failThreshold = (round == 4 && state.players.length >= 7) ? 2 : 1;
+    final missionSuccess = failCount < failThreshold;
 
-    // 判斷是否結束
+    final newGood = state.goodScore + (missionSuccess ? 1 : 0);
+    final newEvil = state.evilScore + (missionSuccess ? 0 : 1);
+
     if (newGood >= 3) {
+      // 好人取得三次成功，進入刺殺階段
       state = state.copyWith(
         goodScore: newGood,
         evilScore: newEvil,
         phase: GamePhase.assassinate,
       );
     } else if (newEvil >= 3) {
+      // 邪惡取得三次失敗，遊戲結束
       state = state.copyWith(
         goodScore: newGood,
         evilScore: newEvil,
         phase: GamePhase.result,
       );
     } else {
-      // 下一回合提案，領隊遞增
+      // 進入下一回合提案，換下一位領隊
       state = state.copyWith(
         goodScore: newGood,
         evilScore: newEvil,
@@ -88,8 +94,8 @@ class GameController extends StateNotifier<GameState> {
 
   /// 刺殺行動：Assassin 選擇目標，判定是否為 Merlin
   void assassinate(int targetIndex) {
-    // 找到 Merlin 的玩家 index
-    final merlinIndex = state.players.indexWhere((p) => p.role is Merlin);
+    final merlinIndex =
+        state.players.indexWhere((p) => p.role is Merlin);
     final success = targetIndex == merlinIndex;
 
     state = state.copyWith(
@@ -99,6 +105,7 @@ class GameController extends StateNotifier<GameState> {
     );
   }
 
+  /// 重置遊戲狀態
   void reset() {
     state = const GameState();
   }

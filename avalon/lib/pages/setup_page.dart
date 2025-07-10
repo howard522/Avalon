@@ -26,9 +26,8 @@ class _SetupPageState extends ConsumerState<SetupPage> {
   }
 
   void _startGame() {
-    final playerCount = ref.read(gameControllerProvider).players.length;
-    // 根據人數動態產生角色並洗牌
-    final roles = RoleFactory.rolesForCount(playerCount)..shuffle();
+    final count = ref.read(gameControllerProvider).players.length;
+    final roles = RoleFactory.rolesForCount(count)..shuffle();
     ref.read(gameControllerProvider.notifier).assignRoles(roles);
     Navigator.push(
       context,
@@ -55,10 +54,7 @@ class _SetupPageState extends ConsumerState<SetupPage> {
               onSubmitted: (_) => _addPlayer(),
             ),
             const SizedBox(height: 12),
-            ElevatedButton(
-              onPressed: _addPlayer,
-              child: const Text('加入玩家'),
-            ),
+            ElevatedButton(onPressed: _addPlayer, child: const Text('加入玩家')),
             const SizedBox(height: 16),
             Expanded(
               child: ListView.builder(
