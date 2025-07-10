@@ -19,7 +19,7 @@ sealed class Role with _$Role {
   const factory Role.morgana() = Morgana;
   const factory Role.mordred() = Mordred;
   const factory Role.oberon() = Oberon;
-  const factory Role.minion() = MinionOfMordred;
+  const factory Role.minion() = Minion;
 
   /// 陣營判定
   Faction get faction => when(

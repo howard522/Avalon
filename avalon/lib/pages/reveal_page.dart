@@ -27,11 +27,11 @@ class _RevealPageState extends ConsumerState<RevealPage> {
 
     String extraInfo() {
       final role = player.role;
-      // Oberon: evil, hidden from other evil, knows no teammates
+      // Oberon
       if (role is Oberon) {
-        return '你是奧伯倫：不被其他壞人識別，也不知道隊友。';
+        return '你是奧伯倫：不被其他壞人或梅林識別，也不知道隊友。';
       }
-      // Other evil: know fellow evil excluding Oberon
+      // 其他壞人（含爪牙、刺客、摩甘娜、莫德雷德）
       if (role.faction == Faction.evil) {
         final teammates = state.players
             .where((p) =>
@@ -42,17 +42,18 @@ class _RevealPageState extends ConsumerState<RevealPage> {
             .join(', ');
         return '你的隊友: $teammates';
       }
-      // Merlin: sees evil excluding Oberon
+      // Merlin
       if (role is Merlin) {
         final visible = state.players
             .where((p) =>
                 p.role.faction == Faction.evil &&
-                p.role is! Mordred)
+                p.role is! Mordred &&
+                p.role is! Oberon)
             .map((p) => p.name)
             .join(', ');
         return '你看見的壞人: $visible';
       }
-      // Percival: sees Merlin and Morgana as ambiguous
+      // Percival
       if (role is Percival) {
         final candidates = state.players
             .where((p) => p.role is Merlin || p.role is Morgana)
@@ -60,14 +61,14 @@ class _RevealPageState extends ConsumerState<RevealPage> {
             .join(', ');
         return '你看見: $candidates，其中一人是梅林';
       }
-      // Loyal Servant: no special info
+      // 好人
       return '你是忠臣：無特殊能力。';
     }
 
     String roleDesc() {
       final r = player.role;
       if (r is Merlin) {
-        return '梅林：可見所有壞人（不含莫德雷德），須保密身份。';
+        return '梅林：可見所有壞人（不含莫德雷德與奧伯倫），須保密身份。';
       }
       if (r is Percival) {
         return '帕西維爾：可見梅林與摩甘娜的幻象，需保護梅林。';
@@ -79,13 +80,16 @@ class _RevealPageState extends ConsumerState<RevealPage> {
         return '刺客：壞人核心，好人三勝後可刺殺梅林。';
       }
       if (r is Morgana) {
-        return '摩甘娜：對帕西維爾呈現幻象，可辨識其他壞人（不含奧伯倫）。';
+        return '摩甘娜：呈現梅林幻象，可辨識其他壞人（不含奧伯倫）。';
       }
       if (r is Mordred) {
-        return '莫德雷德：不被梅林偵測，可辨識其他壞人（不含奧伯倫）。';
+        return '莫德雷德：梅林無法偵測，可辨識其他壞人（不含奧伯倫）。';
       }
       if (r is Oberon) {
         return '奧伯倫：不被其他壞人或梅林識別，行動獨立。';
+      }
+      if (r is Minion) {
+        return '爪牙：無特殊能力的壞人同伴，但不會被特殊角色識別。';
       }
       return '';
     }

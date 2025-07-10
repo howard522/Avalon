@@ -55,7 +55,7 @@ extension RolePatterns on Role {
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( Merlin value)?  merlin,TResult Function( Percival value)?  percival,TResult Function( LoyalServant value)?  loyalServant,TResult Function( Assassin value)?  assassin,TResult Function( Morgana value)?  morgana,TResult Function( Mordred value)?  mordred,TResult Function( Oberon value)?  oberon,TResult Function( MinionOfMordred value)?  minion,required TResult orElse(),}){
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( Merlin value)?  merlin,TResult Function( Percival value)?  percival,TResult Function( LoyalServant value)?  loyalServant,TResult Function( Assassin value)?  assassin,TResult Function( Morgana value)?  morgana,TResult Function( Mordred value)?  mordred,TResult Function( Oberon value)?  oberon,TResult Function( Minion value)?  minion,required TResult orElse(),}){
 final _that = this;
 switch (_that) {
 case Merlin() when merlin != null:
@@ -65,7 +65,7 @@ return loyalServant(_that);case Assassin() when assassin != null:
 return assassin(_that);case Morgana() when morgana != null:
 return morgana(_that);case Mordred() when mordred != null:
 return mordred(_that);case Oberon() when oberon != null:
-return oberon(_that);case MinionOfMordred() when minion != null:
+return oberon(_that);case Minion() when minion != null:
 return minion(_that);case _:
   return orElse();
 
@@ -84,7 +84,7 @@ return minion(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( Merlin value)  merlin,required TResult Function( Percival value)  percival,required TResult Function( LoyalServant value)  loyalServant,required TResult Function( Assassin value)  assassin,required TResult Function( Morgana value)  morgana,required TResult Function( Mordred value)  mordred,required TResult Function( Oberon value)  oberon,required TResult Function( MinionOfMordred value)  minion,}){
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( Merlin value)  merlin,required TResult Function( Percival value)  percival,required TResult Function( LoyalServant value)  loyalServant,required TResult Function( Assassin value)  assassin,required TResult Function( Morgana value)  morgana,required TResult Function( Mordred value)  mordred,required TResult Function( Oberon value)  oberon,required TResult Function( Minion value)  minion,}){
 final _that = this;
 switch (_that) {
 case Merlin():
@@ -94,7 +94,7 @@ return loyalServant(_that);case Assassin():
 return assassin(_that);case Morgana():
 return morgana(_that);case Mordred():
 return mordred(_that);case Oberon():
-return oberon(_that);case MinionOfMordred():
+return oberon(_that);case Minion():
 return minion(_that);}
 }
 /// A variant of `map` that fallback to returning `null`.
@@ -109,7 +109,7 @@ return minion(_that);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( Merlin value)?  merlin,TResult? Function( Percival value)?  percival,TResult? Function( LoyalServant value)?  loyalServant,TResult? Function( Assassin value)?  assassin,TResult? Function( Morgana value)?  morgana,TResult? Function( Mordred value)?  mordred,TResult? Function( Oberon value)?  oberon,TResult? Function( MinionOfMordred value)?  minion,}){
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( Merlin value)?  merlin,TResult? Function( Percival value)?  percival,TResult? Function( LoyalServant value)?  loyalServant,TResult? Function( Assassin value)?  assassin,TResult? Function( Morgana value)?  morgana,TResult? Function( Mordred value)?  mordred,TResult? Function( Oberon value)?  oberon,TResult? Function( Minion value)?  minion,}){
 final _that = this;
 switch (_that) {
 case Merlin() when merlin != null:
@@ -119,7 +119,7 @@ return loyalServant(_that);case Assassin() when assassin != null:
 return assassin(_that);case Morgana() when morgana != null:
 return morgana(_that);case Mordred() when mordred != null:
 return mordred(_that);case Oberon() when oberon != null:
-return oberon(_that);case MinionOfMordred() when minion != null:
+return oberon(_that);case Minion() when minion != null:
 return minion(_that);case _:
   return null;
 
@@ -146,7 +146,7 @@ return loyalServant();case Assassin() when assassin != null:
 return assassin();case Morgana() when morgana != null:
 return morgana();case Mordred() when mordred != null:
 return mordred();case Oberon() when oberon != null:
-return oberon();case MinionOfMordred() when minion != null:
+return oberon();case Minion() when minion != null:
 return minion();case _:
   return orElse();
 
@@ -174,7 +174,7 @@ return loyalServant();case Assassin():
 return assassin();case Morgana():
 return morgana();case Mordred():
 return mordred();case Oberon():
-return oberon();case MinionOfMordred():
+return oberon();case Minion():
 return minion();}
 }
 /// A variant of `when` that fallback to returning `null`
@@ -198,7 +198,7 @@ return loyalServant();case Assassin() when assassin != null:
 return assassin();case Morgana() when morgana != null:
 return morgana();case Mordred() when mordred != null:
 return mordred();case Oberon() when oberon != null:
-return oberon();case MinionOfMordred() when minion != null:
+return oberon();case Minion() when minion != null:
 return minion();case _:
   return null;
 
@@ -434,8 +434,8 @@ String toString() {
 /// @nodoc
 
 
-class MinionOfMordred extends Role {
-  const MinionOfMordred(): super._();
+class Minion extends Role {
+  const Minion(): super._();
   
 
 
@@ -445,7 +445,7 @@ class MinionOfMordred extends Role {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is MinionOfMordred);
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Minion);
 }
 
 
