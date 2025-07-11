@@ -6,39 +6,28 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:    # 允许在 Actions 页面手动触发
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-
     steps:
-      # 1. Checkout 代码
       - uses: actions/checkout@v3
-
-      # 2. Setup Flutter
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
           flutter-version: 'stable'
-
-      # 3. Install 依赖
       - name: Install dependencies
         run: |
           cd avalon
           flutter pub get
-
-      # 4. Build Web
       - name: Build Web Release
         run: |
           cd avalon
           flutter build web --release
-
-      # 5. Publish to docs/
       - name: Deploy to docs/
         run: |
-          # 删除旧的 docs 目录
           rm -rf docs
-          # 把刚才生成的 web 放到根目录的 docs
           mv avalon/build/web docs
           git config user.name "${{ github.actor }}"
           git config user.email "${{ github.actor }}@users.noreply.github.com"
