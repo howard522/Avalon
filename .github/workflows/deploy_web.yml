@@ -8,43 +8,54 @@ on:
       - main
   workflow_dispatch:
 
-  jobs:
-    build-and-deploy:
-      runs-on: ubuntu-latest
-      steps:
-        - uses: actions/checkout@v3
-          with:
-            persist-credentials: true
-            fetch-depth: 0
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
 
-        - name: Setup Flutter
-          uses: subosito/flutter-action@v2
-          with:
-            channel: stable
+    steps:
+      # 1. Checkout your repository
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          persist-credentials: true
+          fetch-depth: 0
 
-        - name: Install dependencies
-          run: |
-            cd avalon
-            flutter pub get
+      # 2. Install Flutter (stable channel)
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
 
-        - name: Build Web Release
-          run: |
-            cd avalon
-            flutter build web --release
+      # 3. Install dependencies
+      - name: Install dependencies
+        run: |
+          cd avalon
+          flutter pub get
 
-        - name: Prepare docs directory
-          run: |
-            rm -rf docs
-            cp -r avalon/build/web docs
+      # 4. Build the web release
+      - name: Build Web Release
+        run: |
+          cd avalon
+          flutter build web --release
 
-        - name: Fix base href for GitHub Pages
-          run: |
-            sed -i 's|<base href="/">|<base href="./">|' docs/index.html
+      # 5. Copy build output into docs/
+      - name: Prepare docs directory
+        run: |
+          rm -rf docs
+          cp -r avalon/build/web docs
 
-        - name: Commit and Push docs
-          run: |
-            git config user.name "github-actions[bot]"
-            git config user.email "github-actions[bot]@users.noreply.github.com"
-            git add docs
-            git diff --quiet || git commit -m "chore: deploy web to docs [skip ci]"
-            git push origin main
+      # 6. Fix <base> for GitHub Pages subdirectory
+      - name: Fix base href for GitHub Pages
+        run: |
+          # Ensure resources load under /Avalon/ or your repo name
+          sed -i 's|<base href="/">|<base href="./">|' docs/index.html
+
+      # 7. Commit and push docs/
+      - name: Commit and Push docs
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs
+          # Only commit if there are changes
+          git diff --quiet || git commit -m "chore: deploy web to docs [skip ci]"
+          git push origin main
