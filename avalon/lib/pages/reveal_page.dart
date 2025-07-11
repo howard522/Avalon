@@ -68,7 +68,7 @@ class _RevealPageState extends ConsumerState<RevealPage> {
     String roleDesc() {
       final r = player.role;
       if (r is Merlin) {
-        return '梅林：可見所有壞人（不含莫德雷德與奧伯倫），須保密身份。';
+        return '梅林：可見所有壞人（不含莫德雷德），須保密身份。';
       }
       if (r is Percival) {
         return '帕西維爾：可見梅林與摩甘娜的幻象，需保護梅林。';
