@@ -1,36 +1,54 @@
 # .github/workflows/deploy_web.yml
 
-name: Build & Deploy Flutter Web to docs/
+name: Deploy Flutter Web to GitHub Pages (/docs)
 
 on:
   push:
     branches:
       - main
-  workflow_dispatch:    # 允许在 Actions 页面手动触发
+  workflow_dispatch:
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v3
+      # 1. 签出代码并保留凭据，方便后续 git push
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          persist-credentials: true
+          fetch-depth: 0
+
+      # 2. 安装 Flutter SDK（使用 channel 而非 flutter-version）
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: 'stable'
+          channel: stable
+
+      # 3. 安装依赖
       - name: Install dependencies
         run: |
           cd avalon
           flutter pub get
+
+      # 4. 构建 Web release
       - name: Build Web Release
         run: |
           cd avalon
           flutter build web --release
-      - name: Deploy to docs/
+
+      # 5. 准备 docs 目录
+      - name: Prepare docs directory
         run: |
           rm -rf docs
-          mv avalon/build/web docs
-          git config user.name "${{ github.actor }}"
-          git config user.email "${{ github.actor }}@users.noreply.github.com"
+          cp -r avalon/build/web docs
+
+      # 6. 提交并推送到 main（更新 docs/）
+      - name: Commit and Push docs
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
           git add docs
-          git commit -m "chore: deploy Flutter web to docs/" || echo "No changes to commit"
+          git diff --quiet || git commit -m "chore: deploy web to docs [skip ci]"
           git push origin main
