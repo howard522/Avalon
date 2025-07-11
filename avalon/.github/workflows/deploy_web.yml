@@ -1,6 +1,7 @@
+# .github/workflows/deploy_web.yml
+
 name: Build & Deploy Flutter Web
 
-# 触发条件：每次 push 到 main 分支，或 PR 合并到 main
 on:
   push:
     branches:
@@ -8,43 +9,40 @@ on:
 
 jobs:
   build-and-deploy:
-    # 选择执行环境
     runs-on: ubuntu-latest
 
     steps:
-      # 1. 签出你仓库里的所有代码
-      - uses: actions/checkout@v3
+      # 1. Checkout repository
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-      # 2. 设置 Flutter SDK（使用 subosito/flutter-action）
+      # 2. Install Flutter SDK
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: 'stable'   # 也可指定 '3.7.0'、'3.10.5' 等
+          flutter-version: 'stable'
 
-      # 3. 安装依赖
+      # 3. Get dependencies
       - name: Install dependencies
         run: flutter pub get
 
-      # 4. 运行静态代码分析（可选）
+      # 4. (Optional) Analyze
       - name: Analyze code
         run: flutter analyze
 
-      # 5. 运行测试（可选）
+      # 5. (Optional) Run tests
       - name: Run tests
         run: flutter test --coverage
 
-      # 6. 构建 Web 版本
+      # 6. Build web release
       - name: Build Web
         run: flutter build web --release
 
-      # 7. 部署到 GitHub Pages（使用 peaceiris/actions-gh-pages）
+      # 7. Deploy to GitHub Pages (gh-pages branch)
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          # 指定要发布的目录
           publish_dir: build/web
-          # 发布到 gh-pages 分支
           publish_branch: gh-pages
-          # 可选：自定义 commit 信息
           commit_message: "🚀 Deploy Flutter Web to GitHub Pages"
