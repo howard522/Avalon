@@ -1,5 +1,3 @@
-// lib/pages/proposal_page.dart
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -8,7 +6,7 @@ import '../models/game_state.dart';
 import '../models/player.dart';
 import '../models/team_size_factory.dart';
 import '../widgets/progress_panel.dart';
-import 'quest_page.dart';
+import 'vote_page.dart';  // ← 新增
 
 class ProposalPage extends ConsumerStatefulWidget {
   const ProposalPage({Key? key}) : super(key: key);
@@ -58,7 +56,8 @@ class _ProposalPageState extends ConsumerState<ProposalPage> {
                           .proposeTeam(_selected);
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (_) => const QuestPage()),
+                        MaterialPageRoute(
+                            builder: (_) => const VotePage()),  // ← 導向 VotePage
                       );
                     }
                   : null,

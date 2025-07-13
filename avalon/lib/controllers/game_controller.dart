@@ -1,9 +1,10 @@
-// lib/controllers/game_controller.dart
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/game_state.dart';
 import '../models/player.dart';
 import '../models/role.dart';
+import '../models/team_size_factory.dart';
+import '../controllers/game_controller.dart';
+import '../widgets/progress_panel.dart';
 
 final gameControllerProvider =
     StateNotifierProvider<GameController, GameState>((ref) => GameController());
@@ -37,9 +38,39 @@ class GameController extends StateNotifier<GameState> {
     }
   }
 
-  /// 提案隊伍並進入 Quest 階段
+  /// 提案隊伍 → 先進入投票階段
   void proposeTeam(List<int> teamIndices) {
-    state = state.copyWith(proposedTeam: teamIndices, phase: GamePhase.quest);
+    state = state.copyWith(
+      proposedTeam: teamIndices,
+      phase: GamePhase.vote,
+    );
+  }
+
+  /// 處理隊伍投票是否通過
+  void voteTeam(bool approved) {
+    if (approved) {
+      // 通過 → 清零否決連續計數，進入任務階段
+      state = state.copyWith(
+        phase: GamePhase.quest,
+        rejectStreak: 0,
+      );
+    } else {
+      // 否決 → 增加一次連續否決
+      final streak = state.rejectStreak + 1;
+      if (streak >= 5) {
+        // 連續 5 次否決 → 壞人勝利
+        state = state.copyWith(
+          phase: GamePhase.result,
+        );
+      } else {
+        // 換下一位領隊，回到提名階段
+        state = state.copyWith(
+          phase: GamePhase.proposal,
+          leaderIndex: (state.leaderIndex + 1) % state.players.length,
+          rejectStreak: streak,
+        );
+      }
+    }
   }
 
   /// 隊伍成員提交任務投票 Success(true)/Fail(false)
@@ -49,40 +80,34 @@ class GameController extends StateNotifier<GameState> {
     if (updated.length >= state.proposedTeam.length) {
       final successCount = updated.where((v) => v).length;
       final failCount = updated.length - successCount;
-      // 清空本輪投票
       state = state.copyWith(missionVotes: <bool>[]);
-      // 根據票數進行結算
       recordMissionResult(successCount, failCount);
     }
   }
 
   /// 根據票數閾值更新階段和分數
   void recordMissionResult(int successCount, int failCount) {
-    // 計算目前是第幾回合 (從1開始)
     final round = state.goodScore + state.evilScore + 1;
-    // 第4回合且人數>=7時需2張失敗票才算失敗，否則1張即算失敗
-    final failThreshold = (round == 4 && state.players.length >= 7) ? 2 : 1;
+    final failThreshold =
+        (round == 4 && state.players.length >= 7) ? 2 : 1;
     final missionSuccess = failCount < failThreshold;
 
     final newGood = state.goodScore + (missionSuccess ? 1 : 0);
     final newEvil = state.evilScore + (missionSuccess ? 0 : 1);
 
     if (newGood >= 3) {
-      // 好人取得三次成功，進入刺殺階段
       state = state.copyWith(
         goodScore: newGood,
         evilScore: newEvil,
         phase: GamePhase.assassinate,
       );
     } else if (newEvil >= 3) {
-      // 邪惡取得三次失敗，遊戲結束
       state = state.copyWith(
         goodScore: newGood,
         evilScore: newEvil,
         phase: GamePhase.result,
       );
     } else {
-      // 進入下一回合提案，換下一位領隊
       state = state.copyWith(
         goodScore: newGood,
         evilScore: newEvil,

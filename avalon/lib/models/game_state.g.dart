@@ -21,6 +21,7 @@ _GameState _$GameStateFromJson(Map<String, dynamic> json) => _GameState(
           ?.map((e) => (e as num).toInt())
           .toList() ??
       const <int>[],
+  rejectStreak: (json['rejectStreak'] as num?)?.toInt() ?? 0,
   missionVotes:
       (json['missionVotes'] as List<dynamic>?)
           ?.map((e) => e as bool)
@@ -39,6 +40,7 @@ Map<String, dynamic> _$GameStateToJson(_GameState instance) =>
       'leaderIndex': instance.leaderIndex,
       'revealIndex': instance.revealIndex,
       'proposedTeam': instance.proposedTeam,
+      'rejectStreak': instance.rejectStreak,
       'missionVotes': instance.missionVotes,
       'goodScore': instance.goodScore,
       'evilScore': instance.evilScore,
@@ -50,6 +52,7 @@ const _$GamePhaseEnumMap = {
   GamePhase.setup: 'setup',
   GamePhase.reveal: 'reveal',
   GamePhase.proposal: 'proposal',
+  GamePhase.vote: 'vote',
   GamePhase.quest: 'quest',
   GamePhase.assassinate: 'assassinate',
   GamePhase.result: 'result',
