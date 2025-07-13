@@ -1,16 +1,16 @@
 // lib/pages/quest_page.dart
 
 import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../controllers/game_controller.dart';
 import '../models/game_state.dart';
 import '../models/player.dart';
-import '../models/role.dart';            // for Faction
+import '../models/role.dart';              // for Faction
 import '../widgets/progress_panel.dart';
 import 'proposal_page.dart';
+import 'lady_page.dart';
 import 'assassinate_page.dart';
 import 'result_page.dart';
 
@@ -27,6 +27,8 @@ class _QuestPageState extends ConsumerState<QuestPage> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(gameControllerProvider);
+    final controller = ref.read(gameControllerProvider.notifier);
+
     final round = state.goodScore + state.evilScore + 1;
     final voteIndex = state.missionVotes.length;
     final teamSize = state.proposedTeam.length;
@@ -49,7 +51,6 @@ class _QuestPageState extends ConsumerState<QuestPage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: buttons.map((label) {
                     final success = label == 'Success';
-                    // 臨時票數，用於顯示
                     final tempVotes = List<bool>.from(state.missionVotes)
                       ..add(success);
                     final successCount = tempVotes.where((v) => v).length;
@@ -59,14 +60,11 @@ class _QuestPageState extends ConsumerState<QuestPage> {
                       padding: const EdgeInsets.symmetric(horizontal: 8),
                       child: ElevatedButton(
                         onPressed: () {
-                          // 提交投票
-                          ref
-                              .read(gameControllerProvider.notifier)
-                              .submitMissionVote(success);
+                          controller.submitMissionVote(success);
                           setState(() => showButtons = false);
 
-                          // 只有當所有隊員都投完票時，顯示結果並導航
                           if (tempVotes.length == teamSize) {
+                            // 顯示本回合結果對話框
                             showDialog(
                               context: context,
                               builder: (_) => AlertDialog(
@@ -86,27 +84,27 @@ class _QuestPageState extends ConsumerState<QuestPage> {
                                 ],
                               ),
                             ).then((_) {
-                              final newPhase =
-                                  ref.read(gameControllerProvider).phase;
+                              final newPhase = ref.read(gameControllerProvider).phase;
+
                               if (newPhase == GamePhase.proposal) {
                                 Navigator.pushReplacement(
                                   context,
-                                  MaterialPageRoute(
-                                      builder: (_) => const ProposalPage()),
+                                  MaterialPageRoute(builder: (_) => const ProposalPage()),
                                 );
-                              } else if (newPhase ==
-                                  GamePhase.assassinate) {
+                              } else if (newPhase == GamePhase.lady) {
                                 Navigator.pushReplacement(
                                   context,
-                                  MaterialPageRoute(
-                                      builder: (_) =>
-                                          const AssassinatePage()),
+                                  MaterialPageRoute(builder: (_) => const LadyPage()),
+                                );
+                              } else if (newPhase == GamePhase.assassinate) {
+                                Navigator.pushReplacement(
+                                  context,
+                                  MaterialPageRoute(builder: (_) => const AssassinatePage()),
                                 );
                               } else if (newPhase == GamePhase.result) {
                                 Navigator.pushReplacement(
                                   context,
-                                  MaterialPageRoute(
-                                      builder: (_) => const ResultPage()),
+                                  MaterialPageRoute(builder: (_) => const ResultPage()),
                                 );
                               }
                             });

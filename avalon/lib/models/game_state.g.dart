@@ -29,6 +29,8 @@ _GameState _$GameStateFromJson(Map<String, dynamic> json) => _GameState(
       const <bool>[],
   goodScore: (json['goodScore'] as num?)?.toInt() ?? 0,
   evilScore: (json['evilScore'] as num?)?.toInt() ?? 0,
+  ladyHolderIndex: (json['ladyHolderIndex'] as num?)?.toInt() ?? -1,
+  ladyTargetIndex: (json['ladyTargetIndex'] as num?)?.toInt(),
   assassinationTargetIndex: (json['assassinationTargetIndex'] as num?)?.toInt(),
   isAssassinationSuccess: json['isAssassinationSuccess'] as bool? ?? false,
 );
@@ -44,6 +46,8 @@ Map<String, dynamic> _$GameStateToJson(_GameState instance) =>
       'missionVotes': instance.missionVotes,
       'goodScore': instance.goodScore,
       'evilScore': instance.evilScore,
+      'ladyHolderIndex': instance.ladyHolderIndex,
+      'ladyTargetIndex': instance.ladyTargetIndex,
       'assassinationTargetIndex': instance.assassinationTargetIndex,
       'isAssassinationSuccess': instance.isAssassinationSuccess,
     };
@@ -54,6 +58,7 @@ const _$GamePhaseEnumMap = {
   GamePhase.proposal: 'proposal',
   GamePhase.vote: 'vote',
   GamePhase.quest: 'quest',
+  GamePhase.lady: 'lady',
   GamePhase.assassinate: 'assassinate',
   GamePhase.result: 'result',
 };
