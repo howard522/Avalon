@@ -1,8 +1,5 @@
-// lib/pages/setup_page.dart
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import '../controllers/game_controller.dart';
 import '../models/role_factory.dart';
 import '../widgets/progress_panel.dart';
@@ -25,9 +22,13 @@ class _SetupPageState extends ConsumerState<SetupPage> {
     _nameCtrl.clear();
   }
 
+  void _removePlayer(int index) {
+    ref.read(gameControllerProvider.notifier).removePlayer(index);
+  }
+
   void _startGame() {
-    final count = ref.read(gameControllerProvider).players.length;
-    final roles = RoleFactory.rolesForCount(count)..shuffle();
+    final players = ref.read(gameControllerProvider).players;
+    final roles = RoleFactory.rolesForCount(players.length)..shuffle();
     ref.read(gameControllerProvider.notifier).assignRoles(roles);
     Navigator.push(
       context,
@@ -38,7 +39,6 @@ class _SetupPageState extends ConsumerState<SetupPage> {
   @override
   Widget build(BuildContext context) {
     final players = ref.watch(gameControllerProvider.select((s) => s.players));
-
     return Scaffold(
       appBar: const ProgressPanel(),
       body: Padding(
@@ -62,6 +62,10 @@ class _SetupPageState extends ConsumerState<SetupPage> {
                 itemBuilder: (_, i) => ListTile(
                   leading: Text('#${i + 1}'),
                   title: Text(players[i].name),
+                  trailing: IconButton(
+                    icon: const Icon(Icons.delete),
+                    onPressed: () => _removePlayer(i),
+                  ),
                 ),
               ),
             ),
