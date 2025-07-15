@@ -1,24 +1,39 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../controllers/game_controller.dart';
 import '../controllers/theme_controller.dart';
-import '../models/game_state.dart';
+import '../pages/reminder_page.dart';           // ★ 新增：防呆頁面
 
-/// 在各頁面頂端顯示：回合／領隊／好人分／壞人分 + 主題切換按鈕
+/// 在各頁面頂端顯示：回合／領隊／好人分／壞人分 + 主題／防呆按鈕
 class ProgressPanel extends ConsumerWidget implements PreferredSizeWidget {
   const ProgressPanel({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(gameControllerProvider);
     final themeMode = ref.watch(themeModeProvider);
+
     return AppBar(
       title: Text(
-        '回合 ${state.goodScore + state.evilScore + 1} • 領隊: ${
-             state.players.isNotEmpty ? state.players[state.leaderIndex].name : '-'}',
+        '回合 ${state.goodScore + state.evilScore + 1} • 領隊: '
+        '${state.players.isNotEmpty ? state.players[state.leaderIndex].name : '-'}',
       ),
       actions: [
+        // —— 防呆：隨時查看角色 —— //
         IconButton(
+          tooltip: '查看角色',
+          icon: const Icon(Icons.visibility),
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const ReminderPage()),
+            );
+          },
+        ),
+        // —— 深／淺色切換 —— //
+        IconButton(
+          tooltip: '切換主題',
           icon: Icon(
             themeMode == ThemeMode.light ? Icons.dark_mode : Icons.light_mode,
           ),
