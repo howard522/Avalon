@@ -1,5 +1,4 @@
 // lib/pages/quest_page.dart
-
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -35,10 +34,8 @@ class _QuestPageState extends ConsumerState<QuestPage> {
     final playerIndex = state.proposedTeam[voteIndex];
     final player = state.players[playerIndex];
 
-    // 好人只能 Success，壞人可選 Success/Fail
-    final isEvil = player.role.faction == Faction.evil;
-    final buttons = isEvil ? ['Success', 'Fail'] : ['Success'];
-    buttons.shuffle(Random());
+    // 無論好壞皆可見 Success / Fail
+    final buttons = ['Success', 'Fail']..shuffle(Random());
 
     return Scaffold(
       appBar: const ProgressPanel(),
@@ -51,63 +48,50 @@ class _QuestPageState extends ConsumerState<QuestPage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: buttons.map((label) {
                     final success = label == 'Success';
-                    final tempVotes = List<bool>.from(state.missionVotes)
-                      ..add(success);
-                    final successCount = tempVotes.where((v) => v).length;
-                    final failCount = tempVotes.length - successCount;
+                    final isEvil = player.role.faction == Faction.evil;
 
                     return Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 8),
                       child: ElevatedButton(
                         onPressed: () {
-                          controller.submitMissionVote(success);
-                          setState(() => showButtons = false);
-
-                          if (tempVotes.length == teamSize) {
-                            // 顯示本回合結果對話框
+                          // 好人按 Fail，自動改為 Success 並提示
+                          if (!isEvil && !success) {
                             showDialog(
                               context: context,
                               builder: (_) => AlertDialog(
-                                title: Text('第 $round 回合 結果'),
-                                content: Text(
-                                  '成功票：$successCount\n'
-                                  '失敗票：$failCount\n\n'
-                                  '當前得分：\n'
-                                  '好人 ${state.goodScore + (successCount > failCount ? 1 : 0)}  vs  '
-                                  '壞人 ${state.evilScore + (failCount >= successCount ? 1 : 0)}',
+                                title: const Text('提醒'),
+                                content: const Text(
+                                  '你是好人角色，不能投 Fail！\n'
+                                  '系統將自動視為 Success。',
                                 ),
                                 actions: [
                                   TextButton(
-                                    onPressed: () => Navigator.pop(context),
-                                    child: const Text('OK'),
+                                    onPressed: () {
+                                      Navigator.pop(context);
+                                      _submitVote(
+                                        controller: controller,
+                                        context: context,
+                                        ref: ref,
+                                        success: true,
+                                        state: state,
+                                        teamSize: teamSize,
+                                      );
+                                    },
+                                    child: const Text('我知道了'),
                                   ),
                                 ],
                               ),
-                            ).then((_) {
-                              final newPhase = ref.read(gameControllerProvider).phase;
-
-                              if (newPhase == GamePhase.proposal) {
-                                Navigator.pushReplacement(
-                                  context,
-                                  MaterialPageRoute(builder: (_) => const ProposalPage()),
-                                );
-                              } else if (newPhase == GamePhase.lady) {
-                                Navigator.pushReplacement(
-                                  context,
-                                  MaterialPageRoute(builder: (_) => const LadyPage()),
-                                );
-                              } else if (newPhase == GamePhase.assassinate) {
-                                Navigator.pushReplacement(
-                                  context,
-                                  MaterialPageRoute(builder: (_) => const AssassinatePage()),
-                                );
-                              } else if (newPhase == GamePhase.result) {
-                                Navigator.pushReplacement(
-                                  context,
-                                  MaterialPageRoute(builder: (_) => const ResultPage()),
-                                );
-                              }
-                            });
+                            );
+                          } else {
+                            // 刺客或好人按 Success / 壞人均正常送出
+                            _submitVote(
+                              controller: controller,
+                              context: context,
+                              ref: ref,
+                              success: success,
+                              state: state,
+                              teamSize: teamSize,
+                            );
                           }
                         },
                         child: Text(label),
@@ -122,5 +106,67 @@ class _QuestPageState extends ConsumerState<QuestPage> {
         ),
       ),
     );
+  }
+
+  void _submitVote({
+    required GameController controller,
+    required BuildContext context,
+    required WidgetRef ref,
+    required bool success,
+    required GameState state,
+    required int teamSize,
+  }) {
+    controller.submitMissionVote(success);
+    setState(() => showButtons = false);
+
+    final tempVotes = List<bool>.from(state.missionVotes)..add(success);
+    if (tempVotes.length == teamSize) {
+      final successCount = tempVotes.where((v) => v).length;
+      final failCount = tempVotes.length - successCount;
+
+      // 顯示本回合結果
+      showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+          title: Text('第 ${state.goodScore + state.evilScore + 1} 回合 結果'),
+          content: Text(
+            '成功票：$successCount\n'
+            '失敗票：$failCount\n\n'
+            '當前得分：\n'
+            '好人 ${state.goodScore + (successCount > failCount ? 1 : 0)}  vs  '
+            '壞人 ${state.evilScore + (failCount >= successCount ? 1 : 0)}',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      ).then((_) {
+        final newPhase = ref.read(gameControllerProvider).phase;
+        Widget nextPage;
+        switch (newPhase) {
+          case GamePhase.proposal:
+            nextPage = const ProposalPage();
+            break;
+          case GamePhase.lady:
+            nextPage = const LadyPage();
+            break;
+          case GamePhase.assassinate:
+            nextPage = const AssassinatePage();
+            break;
+          case GamePhase.result:
+            nextPage = const ResultPage();
+            break;
+          default:
+            nextPage = const ProposalPage();
+        }
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => nextPage),
+        );
+      });
+    }
   }
 }

@@ -3,9 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../controllers/game_controller.dart';
 import '../controllers/theme_controller.dart';
-import '../pages/reminder_page.dart';           // ★ 新增：防呆頁面
+import '../pages/reminder_page.dart';
+import '../pages/roles_overview_page.dart';   // ★ 新增：所有角色一覽頁面
 
-/// 在各頁面頂端顯示：回合／領隊／好人分／壞人分 + 主題／防呆按鈕
+/// 在各頁面頂端顯示：回合／領隊／好人分／壞人分 + 快捷功能按鈕
 class ProgressPanel extends ConsumerWidget implements PreferredSizeWidget {
   const ProgressPanel({Key? key}) : super(key: key);
 
@@ -16,13 +17,13 @@ class ProgressPanel extends ConsumerWidget implements PreferredSizeWidget {
 
     return AppBar(
       title: Text(
-        '回合 ${state.goodScore + state.evilScore + 1} • 領隊: '
-        '${state.players.isNotEmpty ? state.players[state.leaderIndex].name : '-'}',
+        '回合 ${state.goodScore + state.evilScore + 1} • 領隊: ' +
+        (state.players.isNotEmpty ? state.players[state.leaderIndex].name : '-'),
       ),
       actions: [
-        // —— 防呆：隨時查看角色 —— //
+        // 防呆：個人身分查詢
         IconButton(
-          tooltip: '查看角色',
+          tooltip: '查看身份',
           icon: const Icon(Icons.visibility),
           onPressed: () {
             Navigator.push(
@@ -31,7 +32,18 @@ class ProgressPanel extends ConsumerWidget implements PreferredSizeWidget {
             );
           },
         ),
-        // —— 深／淺色切換 —— //
+        // 新增：所有玩家角色列表
+        IconButton(
+          tooltip: '所有角色一覽',
+          icon: const Icon(Icons.list),
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const RolesOverviewPage()),
+            );
+          },
+        ),
+        // 主題切換
         IconButton(
           tooltip: '切換主題',
           icon: Icon(
