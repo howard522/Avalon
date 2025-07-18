@@ -19,7 +19,6 @@ class HomePage extends ConsumerWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Logo / 示意圖
             const CircleAvatar(
               radius: 60,
               backgroundColor: Colors.grey,
@@ -31,7 +30,7 @@ class HomePage extends ConsumerWidget {
             ),
             const SizedBox(height: 32),
 
-            // 開始遊戲 ← 用自訂圖示＋文字
+            // 開始遊戲 按鈕
             SizedBox(
               width: 200,
               child: ElevatedButton.icon(
@@ -53,7 +52,7 @@ class HomePage extends ConsumerWidget {
             ),
             const SizedBox(height: 16),
 
-            // 遊戲說明 ← 用自訂圖示＋文字
+            // 遊戲說明 按鈕
             SizedBox(
               width: 200,
               child: OutlinedButton.icon(
