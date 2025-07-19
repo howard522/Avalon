@@ -15,12 +15,14 @@ class RevealPage extends ConsumerStatefulWidget {
 
 class _RevealPageState extends ConsumerState<RevealPage> {
   final GlobalKey<FlipCardState> _cardKey = GlobalKey<FlipCardState>();
+  bool _busy = false; // 防止快速連點
 
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(gameControllerProvider);
     final controller = ref.read(gameControllerProvider.notifier);
-    final player = state.players[state.revealIndex];
+    final idx = state.revealIndex;
+    final player = state.players[idx];
 
     String extraInfo() {
       final role = player.role;
@@ -72,94 +74,215 @@ class _RevealPageState extends ConsumerState<RevealPage> {
         centerTitle: true,
         elevation: 0,
       ),
-      body: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              '請將手機交給\n${player.name}',
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 24,
-                color: Colors.black87,
-                fontWeight: FontWeight.bold,
-              ),
+      body: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          const SizedBox(height: 24),
+          Text(
+            '請將手機交給：${player.name}\n點擊卡牌翻開查看身份',
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w600,
             ),
-            const SizedBox(height: 16),
-            FlipCard(
-              key: _cardKey,
-              flipOnTouch: true,
-              direction: FlipDirection.HORIZONTAL,
-              front: GestureDetector(
-                onTap: () => _cardKey.currentState?.toggleCard(),
-                child: Container(
-                  width: 360,
-                  height: 540,
-                  decoration: BoxDecoration(
-                    image: const DecorationImage(
-                      image: AssetImage('assets/images/card_back.png'),
-                      fit: BoxFit.cover,
-                    ),
-                    borderRadius: BorderRadius.circular(12),
+          ),
+          const SizedBox(height: 16),
+          Expanded(
+            child: Center(
+              child: SizedBox(
+                width: 360,
+                height: 560,
+                child: FlipCard(
+                  key: _cardKey,
+                  flipOnTouch: true,
+                  direction: FlipDirection.HORIZONTAL,
+                  front: GestureDetector(
+                    onTap: () {
+                      if (_busy) return;
+                      _cardKey.currentState?.toggleCard();
+                    },
+                    child: _CardSurface.front(),
                   ),
-                ),
-              ),
-              back: GestureDetector(
-                onTap: () {
-                  _cardKey.currentState?.toggleCard();
-                  controller.incrementReveal();
-                  if (state.revealIndex + 1 >= state.players.length) {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const ProposalPage(),
-                      ),
-                    );
-                  }
-                },
-                child: Container(
-                  width: 360,
-                  height: 540,
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    image: const DecorationImage(
-                      image: AssetImage(
-                          'assets/images/card_front_placeholder.png'),
-                      fit: BoxFit.cover,
+                  back: GestureDetector(
+                    onTap: () {
+                      if (_busy) return;
+                      _busy = true;
+                      final isLast = state.revealIndex == state.players.length - 1;
+
+                      _cardKey.currentState?.toggleCard();
+                      Future.delayed(const Duration(milliseconds: 250), () {
+                        if (isLast) {
+                          // 最後一位：不再呼叫 incrementReveal()，直接進入下一階段
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const ProposalPage(),
+                            ),
+                          );
+                        } else {
+                          // 不是最後一位：才遞增
+                          controller.incrementReveal();
+                          setState(() => _busy = false);
+                        }
+                      });
+                    },
+                    child: _CardSurface.back(
+                      role: player.role,
+                      extraInfo: extraInfo(),
+                      roleDesc: roleDesc(),
                     ),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        player.role.name,
-                        style: const TextStyle(
-                          fontSize: 32,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black87,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        extraInfo(),
-                        style:
-                            const TextStyle(fontSize: 18, color: Colors.black87),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        roleDesc(),
-                        style: const TextStyle(
-                            fontSize: 14, color: Colors.black54),
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
                   ),
                 ),
               ),
             ),
-          ],
+          ),
+          const SizedBox(height: 32),
+        ],
+      ),
+    );
+  }
+}
+
+/// 卡牌外觀：front / back
+class _CardSurface extends StatelessWidget {
+  final bool isBack;
+  final Role? role;
+  final String? extraInfo;
+  final String? roleDesc;
+
+  const _CardSurface.front()
+      : isBack = false,
+        role = null,
+        extraInfo = null,
+        roleDesc = null;
+
+  const _CardSurface.back({
+    required this.role,
+    required this.extraInfo,
+    required this.roleDesc,
+  }) : isBack = true;
+
+  String _roleAsset(Role r) {
+    return r.map(
+      merlin: (_) => 'assets/images/role_merlin.png',
+      percival: (_) => 'assets/images/role_percival.png',
+      loyalServant: (_) => 'assets/images/role_loyal.png',
+      assassin: (_) => 'assets/images/role_assassin.png',
+      morgana: (_) => 'assets/images/role_morgana.png',
+      mordred: (_) => 'assets/images/role_mordred.png',
+      oberon: (_) => 'assets/images/role_oberon.png',
+      minion: (_) => 'assets/images/role_minion.png',
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 180),
+      decoration: BoxDecoration(
+        image: DecorationImage(
+          image: AssetImage(
+            isBack
+                ? 'assets/images/card_front_placeholder.png'
+                : 'assets/images/card_back.png',
+          ),
+          fit: BoxFit.cover,
+        ),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.18),
+            blurRadius: 12,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.all(18),
+      child: isBack ? _buildBackContent(context) : const SizedBox.shrink(),
+    );
+  }
+
+  Widget _buildBackContent(BuildContext context) {
+    final r = role!;
+    final path = _roleAsset(r);
+
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        _RoleAvatar(role: r, assetPath: path),
+        const SizedBox(height: 16),
+        Text(
+          r.name,
+          style: const TextStyle(
+            fontSize: 34,
+            fontWeight: FontWeight.bold,
+            color: Colors.black87,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 14),
+        Text(
+          extraInfo ?? '',
+          style: const TextStyle(
+            fontSize: 18,
+            color: Colors.black87,
+            height: 1.3,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 10),
+        Text(
+          roleDesc ?? '',
+          style: const TextStyle(
+            fontSize: 14,
+            color: Colors.black54,
+            height: 1.3,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 22),
+        const Text(
+          '（點擊卡牌交給下一位）',
+          style: TextStyle(
+            fontSize: 12,
+            color: Colors.black45,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _RoleAvatar extends StatelessWidget {
+  final Role role;
+  final String assetPath;
+  const _RoleAvatar({
+    Key? key,
+    required this.role,
+    required this.assetPath,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipOval(
+      child: Image.asset(
+        assetPath,
+        width: 120,
+        height: 120,
+        fit: BoxFit.cover,
+        errorBuilder: (_, __, ___) => Container(
+          width: 120,
+          height: 120,
+          color: Colors.grey[300],
+          alignment: Alignment.center,
+          child: Text(
+            role.name.characters.first.toUpperCase(),
+            style: const TextStyle(
+              fontSize: 48,
+              fontWeight: FontWeight.bold,
+              color: Colors.black54,
+            ),
+          ),
         ),
       ),
     );
