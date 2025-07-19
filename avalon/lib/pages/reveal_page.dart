@@ -26,7 +26,7 @@ class _RevealPageState extends ConsumerState<RevealPage> {
 
     String extraInfo() {
       final role = player.role;
-      if (role is Oberon) return '你是奧伯倫：不被其他壞人或梅林識別，也不知道隊友。';
+      if (role is Oberon) return '你是奧伯倫：不被其他壞人識別，但是會被梅林識別，也不知道隊友。';
       if (role.faction == Faction.evil) {
         final mates = state.players
             .where((p) =>
@@ -41,8 +41,7 @@ class _RevealPageState extends ConsumerState<RevealPage> {
         final visibles = state.players
             .where((p) =>
                 p.role.faction == Faction.evil &&
-                p.role is! Mordred &&
-                p.role is! Oberon)
+                p.role is! Mordred )
             .map((p) => p.name)
             .join(', ');
         return '你看見的壞人：$visibles';
@@ -52,20 +51,20 @@ class _RevealPageState extends ConsumerState<RevealPage> {
             .where((p) => p.role is Merlin || p.role is Morgana)
             .map((p) => p.name)
             .join(', ');
-        return '你看見：$candidates，其中一人是梅林';
+        return '你看見：$candidates其中一人是梅林';
       }
       return '你是忠臣：無特殊能力。';
     }
 
     String roleDesc() => player.role.name + '：' + player.role.map(
-          merlin: (_) => '可見所有壞人（不含莫德雷德），須保密身份。',
-          percival: (_) => '可見梅林與摩甘娜幻象，需保護梅林。',
-          loyalServant: (_) => '無特殊能力，支持好人完成任務。',
-          assassin: (_) => '好人三勝後可刺殺梅林。',
-          morgana: (_) => '呈現梅林幻象，可見其他壞人（不含奧伯倫）。',
-          mordred: (_) => '梅林無法偵測，可見其他壞人（不含奧伯倫）。',
-          oberon: (_) => '不被其他壞人或梅林識別，行動獨立。',
-          minion: (_) => '無特殊能力，但不被特殊角色識別。',
+          merlin: (_) => '可見所有壞人（不含莫德雷德），須保密身份',
+          percival: (_) => '可見梅林與摩甘娜幻象，需保護梅林',
+          loyalServant: (_) => '無特殊能力，支持好人完成任務',
+          assassin: (_) => '好人三勝後可刺殺梅林',
+          morgana: (_) => '呈現梅林幻象，可見其他壞人（不含奧伯倫）',
+          mordred: (_) => '梅林無法偵測，可見其他壞人（不含奧伯倫）',
+          oberon: (_) => '不認得其他壞人，但會被梅林識別',
+          minion: (_) => '不被梅林識別',
         );
 
     return Scaffold(
