@@ -39,7 +39,7 @@ sealed class Role with _$Role {
         percival: (_) => '派西維爾',
         loyalServant: (_) => '平民',
         assassin: (_) => '刺客',
-        morgana: (_) => '莫干娜',
+        morgana: (_) => '摩甘娜',
         mordred: (_) => '莫德雷德',
         oberon: (_) => '奧伯倫',
         minion: (_) => '爪牙',

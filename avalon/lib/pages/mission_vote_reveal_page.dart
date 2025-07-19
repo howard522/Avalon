@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../controllers/game_controller.dart';
 import '../models/game_state.dart';
+import '../models/mission_reveal_args.dart';   // ← 共用參數類別
 import 'proposal_page.dart';
 import 'lady_page.dart';
 import 'assassinate_page.dart';
@@ -12,7 +13,8 @@ class MissionVoteRevealPage extends ConsumerStatefulWidget {
   const MissionVoteRevealPage({Key? key}) : super(key: key);
 
   @override
-  ConsumerState<MissionVoteRevealPage> createState() => _MissionVoteRevealPageState();
+  ConsumerState<MissionVoteRevealPage> createState() =>
+      _MissionVoteRevealPageState();
 }
 
 class _MissionVoteRevealPageState extends ConsumerState<MissionVoteRevealPage> {
@@ -22,27 +24,18 @@ class _MissionVoteRevealPageState extends ConsumerState<MissionVoteRevealPage> {
   late int failVotes;
 
   @override
-  void initState() {
-    super.initState();
-    final state = ref.read(gameControllerProvider);
-    // 我們在進入此頁前已把這回合的結果（成功/失敗計入分數），
-    // 但要顯示票數，需要在 push 之前傳或暫存。
-    // 為簡化：使用 ModalRoute arguments（已在 QuestPage push 時傳入）
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final args =
+        ModalRoute.of(context)?.settings.arguments as MissionRevealArgs?;
+    // Fallback 避免 null：雖不應發生，仍保險處理
+    totalVotes = args?.teamSize ?? 0;
+    successVotes = args?.successCount ?? 0;
+    failVotes = args?.failCount ?? 0;
   }
 
   @override
   Widget build(BuildContext context) {
-    final args = ModalRoute.of(context)?.settings.arguments;
-    if (args is _MissionRevealArgs) {
-      totalVotes = args.teamSize;
-      successVotes = args.successCount;
-      failVotes = args.failCount;
-    } else {
-      totalVotes = 0;
-      successVotes = 0;
-      failVotes = 0;
-    }
-
     final tokens = _buildOrderedTokens(
       successVotes: successVotes,
       failVotes: failVotes,
@@ -57,10 +50,7 @@ class _MissionVoteRevealPageState extends ConsumerState<MissionVoteRevealPage> {
         title: const Text('任務投票揭示'),
         centerTitle: true,
         elevation: 0,
-        actions: [
-          // 回合資訊顯示簡化
-          _ScoreBadge(),
-        ],
+        actions: const [_ScoreBadge()],
       ),
       body: GestureDetector(
         behavior: HitTestBehavior.opaque,
@@ -95,12 +85,12 @@ class _MissionVoteRevealPageState extends ConsumerState<MissionVoteRevealPage> {
               const SizedBox(height: 32),
               Text(
                 '本回合結果：成功 $successVotes ；失敗 $failVotes',
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                style:
+                    const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 12),
               const Text(
-                '（成功指示物會先全部揭示，接著再揭示失敗）\n'
-                '此順序不對應真實玩家順序，避免資訊外洩。',
+                '（成功指示物會先全部揭示，再揭示失敗）',
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 12, color: Colors.black54),
               )
@@ -116,14 +106,11 @@ class _MissionVoteRevealPageState extends ConsumerState<MissionVoteRevealPage> {
     required int failVotes,
     required int total,
   }) {
-    final list = <String>[];
-    for (int i = 0; i < successVotes; i++) {
-      list.add('assets/images/token_success.png');
-    }
-    for (int i = 0; i < failVotes; i++) {
-      list.add('assets/images/token_fail.png');
-    }
-    // 容錯：若 success+fail < total（理論不會發生）
+    final list = <String>[
+      for (int i = 0; i < successVotes; i++)
+        'assets/images/token_success.png',
+      for (int i = 0; i < failVotes; i++) 'assets/images/token_fail.png',
+    ];
     while (list.length < total) {
       list.add('assets/images/token_hidden.png');
     }
@@ -171,8 +158,9 @@ class _Token extends StatelessWidget {
   }
 }
 
-/// 簡易顯示目前分數（避免重用 ProgressPanel）
 class _ScoreBadge extends ConsumerWidget {
+  const _ScoreBadge({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final s = ref.watch(gameControllerProvider);
@@ -186,16 +174,4 @@ class _ScoreBadge extends ConsumerWidget {
       ),
     );
   }
-}
-
-/// 封裝參數（由 QuestPage push 時傳入）
-class _MissionRevealArgs {
-  final int teamSize;
-  final int successCount;
-  final int failCount;
-  _MissionRevealArgs({
-    required this.teamSize,
-    required this.successCount,
-    required this.failCount,
-  });
 }
