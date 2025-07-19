@@ -93,8 +93,8 @@ class _RevealPageState extends ConsumerState<RevealPage> {
               front: GestureDetector(
                 onTap: () => _cardKey.currentState?.toggleCard(),
                 child: Container(
-                  width: 300,
-                  height: 400,
+                  width: 360,
+                  height: 540,
                   decoration: BoxDecoration(
                     image: const DecorationImage(
                       image: AssetImage('assets/images/card_back.png'),
@@ -118,8 +118,8 @@ class _RevealPageState extends ConsumerState<RevealPage> {
                   }
                 },
                 child: Container(
-                  width: 300,
-                  height: 400,
+                  width: 360,
+                  height: 540,
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
                     image: const DecorationImage(

@@ -15,10 +15,10 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$GameState {
 
- GamePhase get phase; List<Player> get players; int get leaderIndex; int get revealIndex; List<int> get proposedTeam; int get rejectStreak; List<bool> get missionVotes; int get goodScore; int get evilScore;// 湖中女神相關
- int get ladyHolderIndex;// 持有湖中女神者
- int? get ladyTargetIndex;// 被查核的玩家索引
- int? get assassinationTargetIndex; bool get isAssassinationSuccess;
+ GamePhase get phase; List<Player> get players; int get leaderIndex; int get revealIndex; List<int> get proposedTeam; int get rejectStreak; List<bool> get missionVotes; int get goodScore; int get evilScore;/// 已完成任務歷史：每一回合結束時 push
+/// true = 任務成功；false = 任務失敗
+ List<bool> get missionHistory;// 湖中女神相關
+ int get ladyHolderIndex; int? get ladyTargetIndex; int? get assassinationTargetIndex; bool get isAssassinationSuccess;
 /// Create a copy of GameState
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -31,16 +31,16 @@ $GameStateCopyWith<GameState> get copyWith => _$GameStateCopyWithImpl<GameState>
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is GameState&&(identical(other.phase, phase) || other.phase == phase)&&const DeepCollectionEquality().equals(other.players, players)&&(identical(other.leaderIndex, leaderIndex) || other.leaderIndex == leaderIndex)&&(identical(other.revealIndex, revealIndex) || other.revealIndex == revealIndex)&&const DeepCollectionEquality().equals(other.proposedTeam, proposedTeam)&&(identical(other.rejectStreak, rejectStreak) || other.rejectStreak == rejectStreak)&&const DeepCollectionEquality().equals(other.missionVotes, missionVotes)&&(identical(other.goodScore, goodScore) || other.goodScore == goodScore)&&(identical(other.evilScore, evilScore) || other.evilScore == evilScore)&&(identical(other.ladyHolderIndex, ladyHolderIndex) || other.ladyHolderIndex == ladyHolderIndex)&&(identical(other.ladyTargetIndex, ladyTargetIndex) || other.ladyTargetIndex == ladyTargetIndex)&&(identical(other.assassinationTargetIndex, assassinationTargetIndex) || other.assassinationTargetIndex == assassinationTargetIndex)&&(identical(other.isAssassinationSuccess, isAssassinationSuccess) || other.isAssassinationSuccess == isAssassinationSuccess));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is GameState&&(identical(other.phase, phase) || other.phase == phase)&&const DeepCollectionEquality().equals(other.players, players)&&(identical(other.leaderIndex, leaderIndex) || other.leaderIndex == leaderIndex)&&(identical(other.revealIndex, revealIndex) || other.revealIndex == revealIndex)&&const DeepCollectionEquality().equals(other.proposedTeam, proposedTeam)&&(identical(other.rejectStreak, rejectStreak) || other.rejectStreak == rejectStreak)&&const DeepCollectionEquality().equals(other.missionVotes, missionVotes)&&(identical(other.goodScore, goodScore) || other.goodScore == goodScore)&&(identical(other.evilScore, evilScore) || other.evilScore == evilScore)&&const DeepCollectionEquality().equals(other.missionHistory, missionHistory)&&(identical(other.ladyHolderIndex, ladyHolderIndex) || other.ladyHolderIndex == ladyHolderIndex)&&(identical(other.ladyTargetIndex, ladyTargetIndex) || other.ladyTargetIndex == ladyTargetIndex)&&(identical(other.assassinationTargetIndex, assassinationTargetIndex) || other.assassinationTargetIndex == assassinationTargetIndex)&&(identical(other.isAssassinationSuccess, isAssassinationSuccess) || other.isAssassinationSuccess == isAssassinationSuccess));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,phase,const DeepCollectionEquality().hash(players),leaderIndex,revealIndex,const DeepCollectionEquality().hash(proposedTeam),rejectStreak,const DeepCollectionEquality().hash(missionVotes),goodScore,evilScore,ladyHolderIndex,ladyTargetIndex,assassinationTargetIndex,isAssassinationSuccess);
+int get hashCode => Object.hash(runtimeType,phase,const DeepCollectionEquality().hash(players),leaderIndex,revealIndex,const DeepCollectionEquality().hash(proposedTeam),rejectStreak,const DeepCollectionEquality().hash(missionVotes),goodScore,evilScore,const DeepCollectionEquality().hash(missionHistory),ladyHolderIndex,ladyTargetIndex,assassinationTargetIndex,isAssassinationSuccess);
 
 @override
 String toString() {
-  return 'GameState(phase: $phase, players: $players, leaderIndex: $leaderIndex, revealIndex: $revealIndex, proposedTeam: $proposedTeam, rejectStreak: $rejectStreak, missionVotes: $missionVotes, goodScore: $goodScore, evilScore: $evilScore, ladyHolderIndex: $ladyHolderIndex, ladyTargetIndex: $ladyTargetIndex, assassinationTargetIndex: $assassinationTargetIndex, isAssassinationSuccess: $isAssassinationSuccess)';
+  return 'GameState(phase: $phase, players: $players, leaderIndex: $leaderIndex, revealIndex: $revealIndex, proposedTeam: $proposedTeam, rejectStreak: $rejectStreak, missionVotes: $missionVotes, goodScore: $goodScore, evilScore: $evilScore, missionHistory: $missionHistory, ladyHolderIndex: $ladyHolderIndex, ladyTargetIndex: $ladyTargetIndex, assassinationTargetIndex: $assassinationTargetIndex, isAssassinationSuccess: $isAssassinationSuccess)';
 }
 
 
@@ -51,7 +51,7 @@ abstract mixin class $GameStateCopyWith<$Res>  {
   factory $GameStateCopyWith(GameState value, $Res Function(GameState) _then) = _$GameStateCopyWithImpl;
 @useResult
 $Res call({
- GamePhase phase, List<Player> players, int leaderIndex, int revealIndex, List<int> proposedTeam, int rejectStreak, List<bool> missionVotes, int goodScore, int evilScore, int ladyHolderIndex, int? ladyTargetIndex, int? assassinationTargetIndex, bool isAssassinationSuccess
+ GamePhase phase, List<Player> players, int leaderIndex, int revealIndex, List<int> proposedTeam, int rejectStreak, List<bool> missionVotes, int goodScore, int evilScore, List<bool> missionHistory, int ladyHolderIndex, int? ladyTargetIndex, int? assassinationTargetIndex, bool isAssassinationSuccess
 });
 
 
@@ -68,7 +68,7 @@ class _$GameStateCopyWithImpl<$Res>
 
 /// Create a copy of GameState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? phase = null,Object? players = null,Object? leaderIndex = null,Object? revealIndex = null,Object? proposedTeam = null,Object? rejectStreak = null,Object? missionVotes = null,Object? goodScore = null,Object? evilScore = null,Object? ladyHolderIndex = null,Object? ladyTargetIndex = freezed,Object? assassinationTargetIndex = freezed,Object? isAssassinationSuccess = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? phase = null,Object? players = null,Object? leaderIndex = null,Object? revealIndex = null,Object? proposedTeam = null,Object? rejectStreak = null,Object? missionVotes = null,Object? goodScore = null,Object? evilScore = null,Object? missionHistory = null,Object? ladyHolderIndex = null,Object? ladyTargetIndex = freezed,Object? assassinationTargetIndex = freezed,Object? isAssassinationSuccess = null,}) {
   return _then(_self.copyWith(
 phase: null == phase ? _self.phase : phase // ignore: cast_nullable_to_non_nullable
 as GamePhase,players: null == players ? _self.players : players // ignore: cast_nullable_to_non_nullable
@@ -79,7 +79,8 @@ as List<int>,rejectStreak: null == rejectStreak ? _self.rejectStreak : rejectStr
 as int,missionVotes: null == missionVotes ? _self.missionVotes : missionVotes // ignore: cast_nullable_to_non_nullable
 as List<bool>,goodScore: null == goodScore ? _self.goodScore : goodScore // ignore: cast_nullable_to_non_nullable
 as int,evilScore: null == evilScore ? _self.evilScore : evilScore // ignore: cast_nullable_to_non_nullable
-as int,ladyHolderIndex: null == ladyHolderIndex ? _self.ladyHolderIndex : ladyHolderIndex // ignore: cast_nullable_to_non_nullable
+as int,missionHistory: null == missionHistory ? _self.missionHistory : missionHistory // ignore: cast_nullable_to_non_nullable
+as List<bool>,ladyHolderIndex: null == ladyHolderIndex ? _self.ladyHolderIndex : ladyHolderIndex // ignore: cast_nullable_to_non_nullable
 as int,ladyTargetIndex: freezed == ladyTargetIndex ? _self.ladyTargetIndex : ladyTargetIndex // ignore: cast_nullable_to_non_nullable
 as int?,assassinationTargetIndex: freezed == assassinationTargetIndex ? _self.assassinationTargetIndex : assassinationTargetIndex // ignore: cast_nullable_to_non_nullable
 as int?,isAssassinationSuccess: null == isAssassinationSuccess ? _self.isAssassinationSuccess : isAssassinationSuccess // ignore: cast_nullable_to_non_nullable
@@ -168,10 +169,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( GamePhase phase,  List<Player> players,  int leaderIndex,  int revealIndex,  List<int> proposedTeam,  int rejectStreak,  List<bool> missionVotes,  int goodScore,  int evilScore,  int ladyHolderIndex,  int? ladyTargetIndex,  int? assassinationTargetIndex,  bool isAssassinationSuccess)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( GamePhase phase,  List<Player> players,  int leaderIndex,  int revealIndex,  List<int> proposedTeam,  int rejectStreak,  List<bool> missionVotes,  int goodScore,  int evilScore,  List<bool> missionHistory,  int ladyHolderIndex,  int? ladyTargetIndex,  int? assassinationTargetIndex,  bool isAssassinationSuccess)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _GameState() when $default != null:
-return $default(_that.phase,_that.players,_that.leaderIndex,_that.revealIndex,_that.proposedTeam,_that.rejectStreak,_that.missionVotes,_that.goodScore,_that.evilScore,_that.ladyHolderIndex,_that.ladyTargetIndex,_that.assassinationTargetIndex,_that.isAssassinationSuccess);case _:
+return $default(_that.phase,_that.players,_that.leaderIndex,_that.revealIndex,_that.proposedTeam,_that.rejectStreak,_that.missionVotes,_that.goodScore,_that.evilScore,_that.missionHistory,_that.ladyHolderIndex,_that.ladyTargetIndex,_that.assassinationTargetIndex,_that.isAssassinationSuccess);case _:
   return orElse();
 
 }
@@ -189,10 +190,10 @@ return $default(_that.phase,_that.players,_that.leaderIndex,_that.revealIndex,_t
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( GamePhase phase,  List<Player> players,  int leaderIndex,  int revealIndex,  List<int> proposedTeam,  int rejectStreak,  List<bool> missionVotes,  int goodScore,  int evilScore,  int ladyHolderIndex,  int? ladyTargetIndex,  int? assassinationTargetIndex,  bool isAssassinationSuccess)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( GamePhase phase,  List<Player> players,  int leaderIndex,  int revealIndex,  List<int> proposedTeam,  int rejectStreak,  List<bool> missionVotes,  int goodScore,  int evilScore,  List<bool> missionHistory,  int ladyHolderIndex,  int? ladyTargetIndex,  int? assassinationTargetIndex,  bool isAssassinationSuccess)  $default,) {final _that = this;
 switch (_that) {
 case _GameState():
-return $default(_that.phase,_that.players,_that.leaderIndex,_that.revealIndex,_that.proposedTeam,_that.rejectStreak,_that.missionVotes,_that.goodScore,_that.evilScore,_that.ladyHolderIndex,_that.ladyTargetIndex,_that.assassinationTargetIndex,_that.isAssassinationSuccess);case _:
+return $default(_that.phase,_that.players,_that.leaderIndex,_that.revealIndex,_that.proposedTeam,_that.rejectStreak,_that.missionVotes,_that.goodScore,_that.evilScore,_that.missionHistory,_that.ladyHolderIndex,_that.ladyTargetIndex,_that.assassinationTargetIndex,_that.isAssassinationSuccess);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -209,10 +210,10 @@ return $default(_that.phase,_that.players,_that.leaderIndex,_that.revealIndex,_t
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( GamePhase phase,  List<Player> players,  int leaderIndex,  int revealIndex,  List<int> proposedTeam,  int rejectStreak,  List<bool> missionVotes,  int goodScore,  int evilScore,  int ladyHolderIndex,  int? ladyTargetIndex,  int? assassinationTargetIndex,  bool isAssassinationSuccess)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( GamePhase phase,  List<Player> players,  int leaderIndex,  int revealIndex,  List<int> proposedTeam,  int rejectStreak,  List<bool> missionVotes,  int goodScore,  int evilScore,  List<bool> missionHistory,  int ladyHolderIndex,  int? ladyTargetIndex,  int? assassinationTargetIndex,  bool isAssassinationSuccess)?  $default,) {final _that = this;
 switch (_that) {
 case _GameState() when $default != null:
-return $default(_that.phase,_that.players,_that.leaderIndex,_that.revealIndex,_that.proposedTeam,_that.rejectStreak,_that.missionVotes,_that.goodScore,_that.evilScore,_that.ladyHolderIndex,_that.ladyTargetIndex,_that.assassinationTargetIndex,_that.isAssassinationSuccess);case _:
+return $default(_that.phase,_that.players,_that.leaderIndex,_that.revealIndex,_that.proposedTeam,_that.rejectStreak,_that.missionVotes,_that.goodScore,_that.evilScore,_that.missionHistory,_that.ladyHolderIndex,_that.ladyTargetIndex,_that.assassinationTargetIndex,_that.isAssassinationSuccess);case _:
   return null;
 
 }
@@ -224,7 +225,7 @@ return $default(_that.phase,_that.players,_that.leaderIndex,_that.revealIndex,_t
 @JsonSerializable()
 
 class _GameState implements GameState {
-  const _GameState({this.phase = GamePhase.setup, final  List<Player> players = const <Player>[], this.leaderIndex = 0, this.revealIndex = 0, final  List<int> proposedTeam = const <int>[], this.rejectStreak = 0, final  List<bool> missionVotes = const <bool>[], this.goodScore = 0, this.evilScore = 0, this.ladyHolderIndex = -1, this.ladyTargetIndex, this.assassinationTargetIndex, this.isAssassinationSuccess = false}): _players = players,_proposedTeam = proposedTeam,_missionVotes = missionVotes;
+  const _GameState({this.phase = GamePhase.setup, final  List<Player> players = const <Player>[], this.leaderIndex = 0, this.revealIndex = 0, final  List<int> proposedTeam = const <int>[], this.rejectStreak = 0, final  List<bool> missionVotes = const <bool>[], this.goodScore = 0, this.evilScore = 0, final  List<bool> missionHistory = const <bool>[], this.ladyHolderIndex = -1, this.ladyTargetIndex, this.assassinationTargetIndex, this.isAssassinationSuccess = false}): _players = players,_proposedTeam = proposedTeam,_missionVotes = missionVotes,_missionHistory = missionHistory;
   factory _GameState.fromJson(Map<String, dynamic> json) => _$GameStateFromJson(json);
 
 @override@JsonKey() final  GamePhase phase;
@@ -254,11 +255,20 @@ class _GameState implements GameState {
 
 @override@JsonKey() final  int goodScore;
 @override@JsonKey() final  int evilScore;
+/// 已完成任務歷史：每一回合結束時 push
+/// true = 任務成功；false = 任務失敗
+ final  List<bool> _missionHistory;
+/// 已完成任務歷史：每一回合結束時 push
+/// true = 任務成功；false = 任務失敗
+@override@JsonKey() List<bool> get missionHistory {
+  if (_missionHistory is EqualUnmodifiableListView) return _missionHistory;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_missionHistory);
+}
+
 // 湖中女神相關
 @override@JsonKey() final  int ladyHolderIndex;
-// 持有湖中女神者
 @override final  int? ladyTargetIndex;
-// 被查核的玩家索引
 @override final  int? assassinationTargetIndex;
 @override@JsonKey() final  bool isAssassinationSuccess;
 
@@ -275,16 +285,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _GameState&&(identical(other.phase, phase) || other.phase == phase)&&const DeepCollectionEquality().equals(other._players, _players)&&(identical(other.leaderIndex, leaderIndex) || other.leaderIndex == leaderIndex)&&(identical(other.revealIndex, revealIndex) || other.revealIndex == revealIndex)&&const DeepCollectionEquality().equals(other._proposedTeam, _proposedTeam)&&(identical(other.rejectStreak, rejectStreak) || other.rejectStreak == rejectStreak)&&const DeepCollectionEquality().equals(other._missionVotes, _missionVotes)&&(identical(other.goodScore, goodScore) || other.goodScore == goodScore)&&(identical(other.evilScore, evilScore) || other.evilScore == evilScore)&&(identical(other.ladyHolderIndex, ladyHolderIndex) || other.ladyHolderIndex == ladyHolderIndex)&&(identical(other.ladyTargetIndex, ladyTargetIndex) || other.ladyTargetIndex == ladyTargetIndex)&&(identical(other.assassinationTargetIndex, assassinationTargetIndex) || other.assassinationTargetIndex == assassinationTargetIndex)&&(identical(other.isAssassinationSuccess, isAssassinationSuccess) || other.isAssassinationSuccess == isAssassinationSuccess));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _GameState&&(identical(other.phase, phase) || other.phase == phase)&&const DeepCollectionEquality().equals(other._players, _players)&&(identical(other.leaderIndex, leaderIndex) || other.leaderIndex == leaderIndex)&&(identical(other.revealIndex, revealIndex) || other.revealIndex == revealIndex)&&const DeepCollectionEquality().equals(other._proposedTeam, _proposedTeam)&&(identical(other.rejectStreak, rejectStreak) || other.rejectStreak == rejectStreak)&&const DeepCollectionEquality().equals(other._missionVotes, _missionVotes)&&(identical(other.goodScore, goodScore) || other.goodScore == goodScore)&&(identical(other.evilScore, evilScore) || other.evilScore == evilScore)&&const DeepCollectionEquality().equals(other._missionHistory, _missionHistory)&&(identical(other.ladyHolderIndex, ladyHolderIndex) || other.ladyHolderIndex == ladyHolderIndex)&&(identical(other.ladyTargetIndex, ladyTargetIndex) || other.ladyTargetIndex == ladyTargetIndex)&&(identical(other.assassinationTargetIndex, assassinationTargetIndex) || other.assassinationTargetIndex == assassinationTargetIndex)&&(identical(other.isAssassinationSuccess, isAssassinationSuccess) || other.isAssassinationSuccess == isAssassinationSuccess));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,phase,const DeepCollectionEquality().hash(_players),leaderIndex,revealIndex,const DeepCollectionEquality().hash(_proposedTeam),rejectStreak,const DeepCollectionEquality().hash(_missionVotes),goodScore,evilScore,ladyHolderIndex,ladyTargetIndex,assassinationTargetIndex,isAssassinationSuccess);
+int get hashCode => Object.hash(runtimeType,phase,const DeepCollectionEquality().hash(_players),leaderIndex,revealIndex,const DeepCollectionEquality().hash(_proposedTeam),rejectStreak,const DeepCollectionEquality().hash(_missionVotes),goodScore,evilScore,const DeepCollectionEquality().hash(_missionHistory),ladyHolderIndex,ladyTargetIndex,assassinationTargetIndex,isAssassinationSuccess);
 
 @override
 String toString() {
-  return 'GameState(phase: $phase, players: $players, leaderIndex: $leaderIndex, revealIndex: $revealIndex, proposedTeam: $proposedTeam, rejectStreak: $rejectStreak, missionVotes: $missionVotes, goodScore: $goodScore, evilScore: $evilScore, ladyHolderIndex: $ladyHolderIndex, ladyTargetIndex: $ladyTargetIndex, assassinationTargetIndex: $assassinationTargetIndex, isAssassinationSuccess: $isAssassinationSuccess)';
+  return 'GameState(phase: $phase, players: $players, leaderIndex: $leaderIndex, revealIndex: $revealIndex, proposedTeam: $proposedTeam, rejectStreak: $rejectStreak, missionVotes: $missionVotes, goodScore: $goodScore, evilScore: $evilScore, missionHistory: $missionHistory, ladyHolderIndex: $ladyHolderIndex, ladyTargetIndex: $ladyTargetIndex, assassinationTargetIndex: $assassinationTargetIndex, isAssassinationSuccess: $isAssassinationSuccess)';
 }
 
 
@@ -295,7 +305,7 @@ abstract mixin class _$GameStateCopyWith<$Res> implements $GameStateCopyWith<$Re
   factory _$GameStateCopyWith(_GameState value, $Res Function(_GameState) _then) = __$GameStateCopyWithImpl;
 @override @useResult
 $Res call({
- GamePhase phase, List<Player> players, int leaderIndex, int revealIndex, List<int> proposedTeam, int rejectStreak, List<bool> missionVotes, int goodScore, int evilScore, int ladyHolderIndex, int? ladyTargetIndex, int? assassinationTargetIndex, bool isAssassinationSuccess
+ GamePhase phase, List<Player> players, int leaderIndex, int revealIndex, List<int> proposedTeam, int rejectStreak, List<bool> missionVotes, int goodScore, int evilScore, List<bool> missionHistory, int ladyHolderIndex, int? ladyTargetIndex, int? assassinationTargetIndex, bool isAssassinationSuccess
 });
 
 
@@ -312,7 +322,7 @@ class __$GameStateCopyWithImpl<$Res>
 
 /// Create a copy of GameState
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? phase = null,Object? players = null,Object? leaderIndex = null,Object? revealIndex = null,Object? proposedTeam = null,Object? rejectStreak = null,Object? missionVotes = null,Object? goodScore = null,Object? evilScore = null,Object? ladyHolderIndex = null,Object? ladyTargetIndex = freezed,Object? assassinationTargetIndex = freezed,Object? isAssassinationSuccess = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? phase = null,Object? players = null,Object? leaderIndex = null,Object? revealIndex = null,Object? proposedTeam = null,Object? rejectStreak = null,Object? missionVotes = null,Object? goodScore = null,Object? evilScore = null,Object? missionHistory = null,Object? ladyHolderIndex = null,Object? ladyTargetIndex = freezed,Object? assassinationTargetIndex = freezed,Object? isAssassinationSuccess = null,}) {
   return _then(_GameState(
 phase: null == phase ? _self.phase : phase // ignore: cast_nullable_to_non_nullable
 as GamePhase,players: null == players ? _self._players : players // ignore: cast_nullable_to_non_nullable
@@ -323,7 +333,8 @@ as List<int>,rejectStreak: null == rejectStreak ? _self.rejectStreak : rejectStr
 as int,missionVotes: null == missionVotes ? _self._missionVotes : missionVotes // ignore: cast_nullable_to_non_nullable
 as List<bool>,goodScore: null == goodScore ? _self.goodScore : goodScore // ignore: cast_nullable_to_non_nullable
 as int,evilScore: null == evilScore ? _self.evilScore : evilScore // ignore: cast_nullable_to_non_nullable
-as int,ladyHolderIndex: null == ladyHolderIndex ? _self.ladyHolderIndex : ladyHolderIndex // ignore: cast_nullable_to_non_nullable
+as int,missionHistory: null == missionHistory ? _self._missionHistory : missionHistory // ignore: cast_nullable_to_non_nullable
+as List<bool>,ladyHolderIndex: null == ladyHolderIndex ? _self.ladyHolderIndex : ladyHolderIndex // ignore: cast_nullable_to_non_nullable
 as int,ladyTargetIndex: freezed == ladyTargetIndex ? _self.ladyTargetIndex : ladyTargetIndex // ignore: cast_nullable_to_non_nullable
 as int?,assassinationTargetIndex: freezed == assassinationTargetIndex ? _self.assassinationTargetIndex : assassinationTargetIndex // ignore: cast_nullable_to_non_nullable
 as int?,isAssassinationSuccess: null == isAssassinationSuccess ? _self.isAssassinationSuccess : isAssassinationSuccess // ignore: cast_nullable_to_non_nullable

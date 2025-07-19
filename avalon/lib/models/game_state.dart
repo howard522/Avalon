@@ -11,7 +11,7 @@ enum GamePhase {
   proposal,
   vote,
   quest,
-  lady,          // 新增：湖中女神階段
+  lady,          // 湖中女神階段
   assassinate,
   result,
 }
@@ -29,9 +29,13 @@ abstract class GameState with _$GameState {
     @Default(0) int goodScore,
     @Default(0) int evilScore,
 
+    /// 已完成任務歷史：每一回合結束時 push
+    /// true = 任務成功；false = 任務失敗
+    @Default(<bool>[]) List<bool> missionHistory,
+
     // 湖中女神相關
-    @Default(-1) int ladyHolderIndex,    // 持有湖中女神者
-    int? ladyTargetIndex,                // 被查核的玩家索引
+    @Default(-1) int ladyHolderIndex,
+    int? ladyTargetIndex,
 
     int? assassinationTargetIndex,
     @Default(false) bool isAssassinationSuccess,

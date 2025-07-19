@@ -29,6 +29,11 @@ _GameState _$GameStateFromJson(Map<String, dynamic> json) => _GameState(
       const <bool>[],
   goodScore: (json['goodScore'] as num?)?.toInt() ?? 0,
   evilScore: (json['evilScore'] as num?)?.toInt() ?? 0,
+  missionHistory:
+      (json['missionHistory'] as List<dynamic>?)
+          ?.map((e) => e as bool)
+          .toList() ??
+      const <bool>[],
   ladyHolderIndex: (json['ladyHolderIndex'] as num?)?.toInt() ?? -1,
   ladyTargetIndex: (json['ladyTargetIndex'] as num?)?.toInt(),
   assassinationTargetIndex: (json['assassinationTargetIndex'] as num?)?.toInt(),
@@ -46,6 +51,7 @@ Map<String, dynamic> _$GameStateToJson(_GameState instance) =>
       'missionVotes': instance.missionVotes,
       'goodScore': instance.goodScore,
       'evilScore': instance.evilScore,
+      'missionHistory': instance.missionHistory,
       'ladyHolderIndex': instance.ladyHolderIndex,
       'ladyTargetIndex': instance.ladyTargetIndex,
       'assassinationTargetIndex': instance.assassinationTargetIndex,

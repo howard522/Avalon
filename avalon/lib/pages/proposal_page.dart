@@ -1,13 +1,11 @@
-// lib/pages/proposal_page.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../controllers/game_controller.dart';
-import '../models/game_state.dart';
 import '../models/team_size_factory.dart';
 import '../pages/reminder_page.dart';
 import '../widgets/progress_panel.dart';
-import 'vote_page.dart'; // ← 使用 VotePage
+import 'vote_page.dart';
 
 class ProposalPage extends ConsumerStatefulWidget {
   const ProposalPage({Key? key}) : super(key: key);
@@ -30,8 +28,8 @@ class _ProposalPageState extends ConsumerState<ProposalPage> {
       totalRounds,
       (i) => TeamSizeFactory.teamSize(players.length, i + 1),
     );
+
     final teamSizeThisRound = teamSizes[round - 1];
-    final pastRounds = state.goodScore + state.evilScore;
 
     return Scaffold(
       appBar: const ProgressPanel(),
@@ -45,9 +43,7 @@ class _ProposalPageState extends ConsumerState<ProposalPage> {
                 context: context,
                 teamSizes: teamSizes,
                 currentRound: round,
-                pastRounds: pastRounds,
-                goodScore: state.goodScore,
-                evilScore: state.evilScore,
+                missionHistory: state.missionHistory,
               ),
               const SizedBox(height: 24),
               Text(
@@ -74,30 +70,30 @@ class _ProposalPageState extends ConsumerState<ProposalPage> {
                         }
                       });
                     },
-                    selectedColor: Theme.of(context)
-                        .colorScheme
-                        .primary
-                        .withOpacity(0.25),
+                    selectedColor: Theme.of(
+                      context,
+                    ).colorScheme.primary.withOpacity(0.25),
                   );
                 }),
               ),
               const SizedBox(height: 24),
               Center(
                 child: ElevatedButton(
-                  onPressed: _selected.length == teamSizeThisRound
-                      ? () {
-                          ref
-                              .read(gameControllerProvider.notifier)
-                              .proposeTeam(_selected);
-                          // ★ 修正：送審後跳轉
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => const VotePage(),
-                            ),
-                          );
-                        }
-                      : null,
+                  onPressed:
+                      _selected.length == teamSizeThisRound
+                          ? () {
+                            ref
+                                .read(gameControllerProvider.notifier)
+                                .proposeTeam(_selected);
+
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const VotePage(),
+                              ),
+                            );
+                          }
+                          : null,
                   child: Padding(
                     padding: const EdgeInsets.symmetric(
                       vertical: 12,
@@ -116,9 +112,7 @@ class _ProposalPageState extends ConsumerState<ProposalPage> {
                   onPressed: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(
-                        builder: (_) => const ReminderPage(),
-                      ),
+                      MaterialPageRoute(builder: (_) => const ReminderPage()),
                     );
                   },
                   child: const Text('查看身份（防呆）'),
@@ -135,15 +129,12 @@ class _ProposalPageState extends ConsumerState<ProposalPage> {
     required BuildContext context,
     required List<int> teamSizes,
     required int currentRound,
-    required int pastRounds,
-    required int goodScore,
-    required int evilScore,
+    required List<bool> missionHistory,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('回合隊伍規模 / 結果',
-            style: Theme.of(context).textTheme.titleMedium),
+        Text('回合隊伍規模 / 結果', style: Theme.of(context).textTheme.titleMedium),
         const SizedBox(height: 8),
         Wrap(
           spacing: 8,
@@ -153,8 +144,8 @@ class _ProposalPageState extends ConsumerState<ProposalPage> {
             Color? fill;
             Widget? resultIcon;
 
-            if (i < pastRounds) {
-              final isSuccess = i < goodScore;
+            if (i < missionHistory.length) {
+              final isSuccess = missionHistory[i];
               fill = isSuccess ? Colors.green[100] : Colors.red[100];
               resultIcon = Icon(
                 isSuccess ? Icons.check : Icons.close,
@@ -175,8 +166,10 @@ class _ProposalPageState extends ConsumerState<ProposalPage> {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text('$roundNumber: ${teamSizes[i]}人',
-                      style: const TextStyle(fontSize: 14)),
+                  Text(
+                    '$roundNumber: ${teamSizes[i]}人',
+                    style: const TextStyle(fontSize: 14),
+                  ),
                   if (resultIcon != null) ...[
                     const SizedBox(width: 4),
                     resultIcon,

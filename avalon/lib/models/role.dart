@@ -35,13 +35,13 @@ sealed class Role with _$Role {
 
   /// 顯示名稱
   String get name => map(
-        merlin: (_) => 'Merlin',
-        percival: (_) => 'Percival',
-        loyalServant: (_) => '忠誠僕人',
-        assassin: (_) => 'Assassin',
-        morgana: (_) => 'Morgana',
-        mordred: (_) => 'Mordred',
-        oberon: (_) => 'Oberon',
-        minion: (_) => '邪惡從者',
+        merlin: (_) => '梅林',
+        percival: (_) => '派西維爾',
+        loyalServant: (_) => '平民',
+        assassin: (_) => '刺客',
+        morgana: (_) => '莫干娜',
+        mordred: (_) => '莫德雷德',
+        oberon: (_) => '奧伯倫',
+        minion: (_) => '爪牙',
       );
 }

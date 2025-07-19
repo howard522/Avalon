@@ -23,7 +23,7 @@ class GameController extends StateNotifier<GameState> {
     state = state.copyWith(players: updated);
   }
 
-  /// 分配角色並進入 Reveal 階段，同時決定亂數起始領隊與初始湖中女神持有者
+  /// 分配角色並進入 Reveal，決定隨機領隊 & 初始湖中女神持有者
   void assignRoles(List<Role> roles) {
     final assigned = [
       for (var i = 0; i < state.players.length; i++)
@@ -39,10 +39,15 @@ class GameController extends StateNotifier<GameState> {
       leaderIndex: randomLeader,
       ladyHolderIndex: initialLadyHolder,
       ladyTargetIndex: null,
+      missionHistory: const [],
+      goodScore: 0,
+      evilScore: 0,
+      assassinationTargetIndex: null,
+      isAssassinationSuccess: false,
     );
   }
 
-  /// Reveal 階段：前進到下一位或進入 Proposal
+  /// Reveal：下一位或轉入 Proposal
   void incrementReveal() {
     final next = state.revealIndex + 1;
     if (next >= state.players.length) {
@@ -52,7 +57,7 @@ class GameController extends StateNotifier<GameState> {
     }
   }
 
-  /// 提案隊伍 → 先進入投票階段
+  /// 領隊提案 → 進入投票(或新流程的 vote/quest)
   void proposeTeam(List<int> teamIndices) {
     state = state.copyWith(
       proposedTeam: teamIndices,
@@ -60,7 +65,7 @@ class GameController extends StateNotifier<GameState> {
     );
   }
 
-  /// 處理隊伍投票是否通過
+  /// 隊伍贊成/否決
   void voteTeam(bool approved) {
     if (approved) {
       state = state.copyWith(
@@ -70,7 +75,8 @@ class GameController extends StateNotifier<GameState> {
     } else {
       final streak = state.rejectStreak + 1;
       if (streak >= 5) {
-        state = state.copyWith(phase: GamePhase.result);
+        // 連續 5 次否決壞人勝
+        state = state.copyWith(phase: GamePhase.result, evilScore: 3);
       } else {
         state = state.copyWith(
           phase: GamePhase.proposal,
@@ -81,7 +87,7 @@ class GameController extends StateNotifier<GameState> {
     }
   }
 
-  /// 隊伍成員提交任務投票 Success(true)/Fail(false)
+  /// 任務成員投票 (success=true, fail=false)
   void submitMissionVote(bool success) {
     final updated = List<bool>.from(state.missionVotes)..add(success);
     state = state.copyWith(missionVotes: updated);
@@ -93,19 +99,27 @@ class GameController extends StateNotifier<GameState> {
     }
   }
 
-  /// 根據票數更新階段和分數，並在第 2、3、4 回合(9-10 人局)觸發湖中女神
+  /// 根據票數更新分數 & 階段，並記錄歷史 missionHistory
   void recordMissionResult(int successCount, int failCount) {
     final round = state.goodScore + state.evilScore + 1;
+
+    // 第 4 回合 7+ 人需 2 張 Fail 才失敗，否則 1 Fail 即失敗
     final failThreshold = (round == 4 && state.players.length >= 7) ? 2 : 1;
     final missionSuccess = failCount < failThreshold;
 
     final newGood = state.goodScore + (missionSuccess ? 1 : 0);
     final newEvil = state.evilScore + (missionSuccess ? 0 : 1);
 
+    // append mission history
+    final newHistory = List<bool>.from(state.missionHistory)
+      ..add(missionSuccess);
+
+    // 三勝判定
     if (newGood >= 3) {
       state = state.copyWith(
         goodScore: newGood,
         evilScore: newEvil,
+        missionHistory: newHistory,
         phase: GamePhase.assassinate,
       );
       return;
@@ -114,16 +128,19 @@ class GameController extends StateNotifier<GameState> {
       state = state.copyWith(
         goodScore: newGood,
         evilScore: newEvil,
+        missionHistory: newHistory,
         phase: GamePhase.result,
       );
       return;
     }
 
+    // 湖中女神觸發 (9–10 人的第 2~4 回合)
     if (state.players.length >= 9 && round >= 2 && round <= 4) {
       final nextLeader = (state.leaderIndex + 1) % state.players.length;
       state = state.copyWith(
         goodScore: newGood,
         evilScore: newEvil,
+        missionHistory: newHistory,
         phase: GamePhase.lady,
         leaderIndex: nextLeader,
         ladyTargetIndex: null,
@@ -131,15 +148,17 @@ class GameController extends StateNotifier<GameState> {
       return;
     }
 
+    // 正常下一回合
     state = state.copyWith(
       goodScore: newGood,
       evilScore: newEvil,
+      missionHistory: newHistory,
       phase: GamePhase.proposal,
       leaderIndex: (state.leaderIndex + 1) % state.players.length,
     );
   }
 
-  /// 湖中女神：持有者點選目標，查看並傳承
+  /// 湖中女神：查核後傳遞
   void inspectLady(int targetIndex) {
     state = state.copyWith(
       ladyTargetIndex: targetIndex,
@@ -148,7 +167,7 @@ class GameController extends StateNotifier<GameState> {
     );
   }
 
-  /// 刺殺行動：Assassin 選擇目標並判定
+  /// 刺殺
   void assassinate(int targetIndex) {
     final merlinIndex = state.players.indexWhere((p) => p.role is Merlin);
     final success = targetIndex == merlinIndex;
@@ -159,7 +178,7 @@ class GameController extends StateNotifier<GameState> {
     );
   }
 
-  /// 重置並保留玩家名單
+  /// 保留玩家重新開始
   void resetKeepPlayers() {
     final currentPlayers = state.players;
     state = state.copyWith(
@@ -167,11 +186,12 @@ class GameController extends StateNotifier<GameState> {
       players: currentPlayers,
       leaderIndex: 0,
       revealIndex: 0,
-      proposedTeam: [],
+      proposedTeam: const [],
       rejectStreak: 0,
-      missionVotes: [],
+      missionVotes: const [],
       goodScore: 0,
       evilScore: 0,
+      missionHistory: const [],
       assassinationTargetIndex: null,
       isAssassinationSuccess: false,
       ladyHolderIndex: -1,
@@ -179,7 +199,7 @@ class GameController extends StateNotifier<GameState> {
     );
   }
 
-  /// 重置遊戲並清空玩家名單
+  /// 完全重置
   void reset() {
     state = const GameState();
   }
