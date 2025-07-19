@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../controllers/game_controller.dart';
-import '../models/game_state.dart';
-import '../widgets/progress_panel.dart';
 import 'setup_page.dart';
+import 'roles_overview_page.dart';
 
 class ResultPage extends ConsumerWidget {
   const ResultPage({Key? key}) : super(key: key);
@@ -20,19 +19,36 @@ class ResultPage extends ConsumerWidget {
         : (state.goodScore > state.evilScore ? '好人' : '壞人');
 
     return Scaffold(
-      appBar: const ProgressPanel(),
+      appBar: AppBar(
+        title: const Text('本局結果'),
+        centerTitle: true,
+        elevation: 0,
+        actions: [
+          IconButton(
+            tooltip: '角色一覽',
+            icon: const Icon(Icons.list),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const RolesOverviewPage()),
+              );
+            },
+          ),
+        ],
+      ),
       body: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text('勝利方：$winner', style: Theme.of(context).textTheme.headlineLarge),
+            Text('勝利方：$winner',
+                style: Theme.of(context).textTheme.headlineLarge),
             const SizedBox(height: 16),
             if (hasAssassinated) ...[
               Text(
                 assassinSucceeded
-                  ? '刺客成功刺殺梅林：壞人勝利！'
-                  : '刺客失敗：好人勝利！',
+                    ? '刺客成功刺殺梅林：壞人勝利！'
+                    : '刺客失敗：好人勝利！',
                 style: Theme.of(context).textTheme.titleMedium,
                 textAlign: TextAlign.center,
               ),
@@ -73,8 +89,8 @@ class ResultPage extends ConsumerWidget {
             ),
             const SizedBox(height: 12),
             Text(
-              '「再來一局」保留玩家名單，重新分配角色；\n'
-              '「重新開始」清空所有玩家並回到初始',
+              '「再來一局」保留玩家名單並重新分配角色；\n'
+              '「重新開始」清空所有玩家。',
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodySmall,
             ),

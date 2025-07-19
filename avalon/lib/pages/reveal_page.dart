@@ -1,13 +1,9 @@
-// lib/pages/reveal_page.dart
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flip_card/flip_card.dart';
 
 import '../controllers/game_controller.dart';
-import '../models/game_state.dart';
 import '../models/role.dart';
-import '../widgets/progress_panel.dart';
 import 'proposal_page.dart';
 
 class RevealPage extends ConsumerStatefulWidget {
@@ -28,9 +24,7 @@ class _RevealPageState extends ConsumerState<RevealPage> {
 
     String extraInfo() {
       final role = player.role;
-      if (role is Oberon) {
-        return '你是奧伯倫：不被其他壞人或梅林識別，也不知道隊友。';
-      }
+      if (role is Oberon) return '你是奧伯倫：不被其他壞人或梅林識別，也不知道隊友。';
       if (role.faction == Faction.evil) {
         final mates = state.players
             .where((p) =>
@@ -45,7 +39,8 @@ class _RevealPageState extends ConsumerState<RevealPage> {
         final visibles = state.players
             .where((p) =>
                 p.role.faction == Faction.evil &&
-                p.role is! Mordred)
+                p.role is! Mordred &&
+                p.role is! Oberon)
             .map((p) => p.name)
             .join(', ');
         return '你看見的壞人：$visibles';
@@ -72,12 +67,15 @@ class _RevealPageState extends ConsumerState<RevealPage> {
         );
 
     return Scaffold(
-      appBar: const ProgressPanel(),
+      appBar: AppBar(
+        title: const Text('身份揭示'),
+        centerTitle: true,
+        elevation: 0,
+      ),
       body: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // 文字顯示在卡牌上方
             Text(
               '請將手機交給\n${player.name}',
               textAlign: TextAlign.center,
@@ -88,8 +86,6 @@ class _RevealPageState extends ConsumerState<RevealPage> {
               ),
             ),
             const SizedBox(height: 16),
-
-            // 卡牌翻轉
             FlipCard(
               key: _cardKey,
               flipOnTouch: true,
@@ -97,8 +93,8 @@ class _RevealPageState extends ConsumerState<RevealPage> {
               front: GestureDetector(
                 onTap: () => _cardKey.currentState?.toggleCard(),
                 child: Container(
-                  width: 360,
-                  height: 540,
+                  width: 300,
+                  height: 400,
                   decoration: BoxDecoration(
                     image: const DecorationImage(
                       image: AssetImage('assets/images/card_back.png'),
@@ -127,7 +123,8 @@ class _RevealPageState extends ConsumerState<RevealPage> {
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
                     image: const DecorationImage(
-                      image: AssetImage('assets/images/card_front_placeholder.png'),
+                      image: AssetImage(
+                          'assets/images/card_front_placeholder.png'),
                       fit: BoxFit.cover,
                     ),
                     borderRadius: BorderRadius.circular(12),
@@ -146,13 +143,15 @@ class _RevealPageState extends ConsumerState<RevealPage> {
                       const SizedBox(height: 8),
                       Text(
                         extraInfo(),
-                        style: const TextStyle(fontSize: 18, color: Colors.black87),
+                        style:
+                            const TextStyle(fontSize: 18, color: Colors.black87),
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 8),
                       Text(
                         roleDesc(),
-                        style: const TextStyle(fontSize: 14, color: Colors.black54),
+                        style: const TextStyle(
+                            fontSize: 14, color: Colors.black54),
                         textAlign: TextAlign.center,
                       ),
                     ],

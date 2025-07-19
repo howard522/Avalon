@@ -1,16 +1,16 @@
-// lib/pages/quest_page.dart
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../controllers/game_controller.dart';
 import '../models/game_state.dart';
-import '../models/role.dart'; // 判斷 Faction
-import '../widgets/progress_panel.dart';
+import '../models/role.dart';
+import '../widgets/progress_panel.dart'; // 保留在投票階段需要的狀態顯示
 import 'proposal_page.dart';
 import 'lady_page.dart';
 import 'assassinate_page.dart';
 import 'result_page.dart';
+import 'mission_vote_reveal_page.dart';
 
 class QuestPage extends ConsumerStatefulWidget {
   const QuestPage({Key? key}) : super(key: key);
@@ -20,9 +20,9 @@ class QuestPage extends ConsumerStatefulWidget {
 }
 
 class _QuestPageState extends ConsumerState<QuestPage> {
-  bool locked = false;            // 防止連點
-  bool waitingNextPlayer = false; // 顯示「交給下一位」提示
-  int shuffleSeed = 0;            // 用於重新隨機兩張卡順序
+  bool locked = false;
+  bool waitingNextPlayer = false;
+  int shuffleSeed = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -59,7 +59,6 @@ class _QuestPageState extends ConsumerState<QuestPage> {
     );
   }
 
-  /// 顯示兩張卡牌（成功 / 失敗）與標題
   Widget _buildChoiceArea({
     required BuildContext context,
     required player,
@@ -115,9 +114,8 @@ class _QuestPageState extends ConsumerState<QuestPage> {
     );
   }
 
-  /// 投完還沒結束時提示交給下一位（顯示下一位玩家名稱）
   Widget _buildNextPlayerPrompt(GameState state) {
-    final voteIndex = state.missionVotes.length; // 已投出票數（包含剛剛那票）
+    final voteIndex = state.missionVotes.length;
     final teamSize = state.proposedTeam.length;
     final remaining = teamSize - voteIndex;
     final bool hasNext = voteIndex < teamSize;
@@ -199,24 +197,20 @@ class _QuestPageState extends ConsumerState<QuestPage> {
       final successCount = tempVotes.where((v) => v).length;
       final failCount = currentCount - successCount;
 
-      showDialog(
-        context: context,
-        builder: (_) => AlertDialog(
-          title: Text('結果 (第 ${state.goodScore + state.evilScore + 1} 回合)'),
-          content: Text(
-            '成功：$successCount\n失敗：$failCount\n\n'
-            '當前得分：\n'
-            '好人 ${state.goodScore + (successCount > failCount ? 1 : 0)}  vs  '
-            '壞人 ${state.evilScore + (failCount >= successCount ? 1 : 0)}',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('OK'),
+      // 直接跳到集中揭示頁面
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => const MissionVoteRevealPage(),
+          settings: RouteSettings(
+            arguments: _MissionRevealArgs(
+              teamSize: teamSize,
+              successCount: successCount,
+              failCount: failCount,
             ),
-          ],
+          ),
         ),
-      ).then((_) => _navigateNext(context));
+      );
     } else {
       Future.delayed(const Duration(milliseconds: 300), () {
         if (!mounted) return;
@@ -226,31 +220,6 @@ class _QuestPageState extends ConsumerState<QuestPage> {
         });
       });
     }
-  }
-
-  void _navigateNext(BuildContext context) {
-    final phase = ref.read(gameControllerProvider).phase;
-    Widget nextPage;
-    switch (phase) {
-      case GamePhase.proposal:
-        nextPage = const ProposalPage();
-        break;
-      case GamePhase.lady:
-        nextPage = const LadyPage();
-        break;
-      case GamePhase.assassinate:
-        nextPage = const AssassinatePage();
-        break;
-      case GamePhase.result:
-        nextPage = const ResultPage();
-        break;
-      default:
-        nextPage = const ProposalPage();
-    }
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (_) => nextPage),
-    );
   }
 }
 
@@ -330,4 +299,17 @@ class _VoteCard extends StatelessWidget {
       ),
     );
   }
+}
+
+/// 這裡複製 MissionVoteRevealPage 的 args class（也可抽到共用檔）
+/// 為避免 import 循環，重新定義一次。
+class _MissionRevealArgs {
+  final int teamSize;
+  final int successCount;
+  final int failCount;
+  _MissionRevealArgs({
+    required this.teamSize,
+    required this.successCount,
+    required this.failCount,
+  });
 }

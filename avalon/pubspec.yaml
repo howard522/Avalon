@@ -42,6 +42,12 @@ flutter:
     - assets/images/card_back.png
     - assets/images/home_icon_start.png
     - assets/images/home_icon_rules.png
+
+    - assets/images/card_front_placeholder.png
+
     - assets/images/card_success.png
     - assets/images/card_fail.png
     
+    - assets/images/token_fail.png
+    - assets/images/token_hidden.png
+    - assets/images/token_success.png

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../controllers/game_controller.dart';
 import '../models/role_factory.dart';
-import '../widgets/progress_panel.dart';
 import 'reveal_page.dart';
 
 class SetupPage extends ConsumerStatefulWidget {
@@ -40,7 +39,11 @@ class _SetupPageState extends ConsumerState<SetupPage> {
   Widget build(BuildContext context) {
     final players = ref.watch(gameControllerProvider.select((s) => s.players));
     return Scaffold(
-      appBar: const ProgressPanel(),
+      appBar: AppBar(
+        title: const Text('玩家設定'),
+        centerTitle: true,
+        elevation: 0,
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
