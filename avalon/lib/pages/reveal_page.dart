@@ -90,7 +90,7 @@ class _RevealPageState extends ConsumerState<RevealPage> {
             child: Center(
               child: SizedBox(
                 width: 360,
-                height: 560,
+                height: 540,
                 child: FlipCard(
                   key: _cardKey,
                   flipOnTouch: true,
