@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
 import '../models/role.dart';
+import '../constants/assets.dart';
 
-/// 共用：角色身份卡顯示
 class RoleIdentityCard extends StatelessWidget {
   final Role role;
-  final String extraInfo;      // 動態資訊（隊友 / 可見壞人 / 等）
-  final String roleDesc;       // 靜態描述（規則文字）
-  final String? bottomHint;    // 底部提示（例如：點擊交給下一位）
+  final String extraInfo;
+  final String roleDesc;
+  final String? bottomHint;
   final double width;
   final double height;
   final EdgeInsetsGeometry padding;
   final bool scrollable;
+  final double topOffset; // ← 新增：上方留白（讓文字整體往下）
 
   const RoleIdentityCard({
     Key? key,
@@ -22,26 +23,28 @@ class RoleIdentityCard extends StatelessWidget {
     this.height = 560,
     this.padding = const EdgeInsets.fromLTRB(20, 28, 20, 24),
     this.scrollable = true,
+    this.topOffset = 48,              // 預設往下推，可調整
   }) : super(key: key);
 
   String _assetFor(Role r) {
     return r.map(
-      merlin: (_) => 'assets/images/role_merlin.png',
-      percival: (_) => 'assets/images/role_percival.png',
-      loyalServant: (_) => 'assets/images/role_loyal.png',
-      assassin: (_) => 'assets/images/role_assassin.png',
-      morgana: (_) => 'assets/images/role_morgana.png',
-      mordred: (_) => 'assets/images/role_mordred.png',
-      oberon: (_) => 'assets/images/role_oberon.png',
-      minion: (_) => 'assets/images/role_minion.png',
+      merlin: (_) => AppAssets.images.roleMerlin,
+      percival: (_) => AppAssets.images.rolePercival,
+      loyalServant: (_) => AppAssets.images.roleLoyal,
+      assassin: (_) => AppAssets.images.roleAssassin,
+      morgana: (_) => AppAssets.images.roleMorgana,
+      mordred: (_) => AppAssets.images.roleMordred,
+      oberon: (_) => AppAssets.images.roleOberon,
+      minion: (_) => AppAssets.images.roleMinion,
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final content = Column(
+    final column = Column(
       mainAxisSize: MainAxisSize.min,
       children: [
+        SizedBox(height: topOffset), // ← 推下整體內容
         ClipOval(
           child: Image.asset(
             _assetFor(role),
@@ -64,7 +67,7 @@ class RoleIdentityCard extends StatelessWidget {
             ),
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 20),
         Text(
           role.name,
           style: const TextStyle(
@@ -74,7 +77,7 @@ class RoleIdentityCard extends StatelessWidget {
           ),
           textAlign: TextAlign.center,
         ),
-        const SizedBox(height: 14),
+        const SizedBox(height: 16),
         Text(
           extraInfo,
           style: const TextStyle(
@@ -84,7 +87,7 @@ class RoleIdentityCard extends StatelessWidget {
           ),
           textAlign: TextAlign.center,
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 14),
         Text(
           roleDesc,
           style: const TextStyle(
@@ -95,7 +98,7 @@ class RoleIdentityCard extends StatelessWidget {
           textAlign: TextAlign.center,
         ),
         if (bottomHint != null) ...[
-          const SizedBox(height: 22),
+          const SizedBox(height: 26),
           Text(
             bottomHint!,
             style: const TextStyle(
@@ -113,8 +116,8 @@ class RoleIdentityCard extends StatelessWidget {
       height: height,
       child: Container(
         decoration: BoxDecoration(
-          image: const DecorationImage(
-            image: AssetImage('assets/images/card_front_placeholder.png'),
+          image: DecorationImage(
+            image: AssetImage(AppAssets.images.cardFront),
             fit: BoxFit.cover,
           ),
           borderRadius: BorderRadius.circular(16),
@@ -132,9 +135,9 @@ class RoleIdentityCard extends StatelessWidget {
           child: scrollable
               ? SingleChildScrollView(
                   physics: const BouncingScrollPhysics(),
-                  child: content,
+                  child: column,
                 )
-              : content,
+              : column,
         ),
       ),
     );

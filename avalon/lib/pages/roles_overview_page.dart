@@ -3,8 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../controllers/game_controller.dart';
 import '../widgets/progress_panel.dart';
+import '../constants/assets.dart';
 
-/// 所有玩家角色一覽頁面
 class RolesOverviewPage extends ConsumerWidget {
   const RolesOverviewPage({Key? key}) : super(key: key);
 
@@ -14,21 +14,30 @@ class RolesOverviewPage extends ConsumerWidget {
 
     return Scaffold(
       appBar: const ProgressPanel(),
-      body: ListView.builder(
+      body: ListView.separated(
         padding: const EdgeInsets.all(16),
         itemCount: state.players.length,
+        separatorBuilder: (_, __) => const SizedBox(height: 8),
         itemBuilder: (context, index) {
-          final player = state.players[index];
-          return Card(
-            margin: const EdgeInsets.symmetric(vertical: 6),
-            child: ListTile(
-              leading: CircleAvatar(
-                child: Text('${index + 1}'),
+            final player = state.players[index];
+            return Card(
+              elevation: 1.5,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
               ),
-              title: Text(player.name),
-              subtitle: Text('角色：${player.role.name}'),
-            ),
-          );
+              child: ListTile(
+                leading: CircleAvatar(
+                  backgroundImage: AssetImage(AppAssets.images.avatarPlaceholder),
+                  child: Text(
+                    player.name.characters.first.toUpperCase(),
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+                title: Text(player.name),
+                subtitle: Text('角色：${player.role.name}'),
+                trailing: Text('#${index + 1}'),
+              ),
+            );
         },
       ),
     );
