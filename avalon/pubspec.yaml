@@ -51,3 +51,13 @@ flutter:
     - assets/images/token_fail.png
     - assets/images/token_hidden.png
     - assets/images/token_success.png
+    
+    - assets/images/role_merlin.png
+    - assets/images/role_percival.png
+    - assets/images/role_loyal.png
+    - assets/images/role_assassin.png
+    - assets/images/role_morgana.png
+    - assets/images/role_mordred.png
+    - assets/images/role_oberon.png
+    - assets/images/role_minion.png
+

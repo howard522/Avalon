@@ -6,8 +6,9 @@ import '../models/player.dart';
 import '../models/role.dart';
 
 /// 正確的寫法：閉包要帶 ref
-final gameControllerProvider =
-    StateNotifierProvider<GameController, GameState>((ref) => GameController());
+final gameControllerProvider = StateNotifierProvider<GameController, GameState>(
+  (ref) => GameController(),
+);
 
 class GameController extends StateNotifier<GameState> {
   GameController() : super(const GameState());
@@ -104,8 +105,7 @@ class GameController extends StateNotifier<GameState> {
 
   void _recordMissionResult(int successCount, int failCount) {
     final round = state.goodScore + state.evilScore + 1;
-    final failThreshold =
-        (round == 4 && state.players.length >= 7) ? 2 : 1;
+    final failThreshold = (round == 4 && state.players.length >= 7) ? 2 : 1;
     final missionSuccess = failCount < failThreshold;
 
     final newGood = state.goodScore + (missionSuccess ? 1 : 0);
@@ -130,10 +130,7 @@ class GameController extends StateNotifier<GameState> {
     }
 
     // 湖中女神條件
-    final canEnterLady = state.ladyEnabled &&
-        state.players.length >= 9 &&
-        round >= 2 &&
-        round <= 4;
+    final canEnterLady = state.ladyEnabled && round >= 2 && round <= 4;
 
     if (canEnterLady) {
       state = state.copyWith(
