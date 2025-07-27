@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../controllers/game_controller.dart';
 import '../models/role_factory.dart';
 import 'reveal_page.dart';
@@ -13,41 +14,22 @@ class SetupPage extends ConsumerStatefulWidget {
 
 class _SetupPageState extends ConsumerState<SetupPage> {
   final _nameCtrl = TextEditingController();
-
-  void _addPlayer() {
-    final name = _nameCtrl.text.trim();
-    if (name.isEmpty) return;
-    ref.read(gameControllerProvider.notifier).addPlayer(name);
-    _nameCtrl.clear();
-  }
-
-  void _removePlayer(int index) {
-    ref.read(gameControllerProvider.notifier).removePlayer(index);
-  }
-
-  void _startGame() {
-    final players = ref.read(gameControllerProvider).players;
-    final roles = RoleFactory.rolesForCount(players.length)..shuffle();
-    ref.read(gameControllerProvider.notifier).assignRoles(roles);
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => const RevealPage()),
-    );
-  }
+  bool _ladyEnabled = true; // ← 預設開啟
 
   @override
   Widget build(BuildContext context) {
     final players = ref.watch(gameControllerProvider.select((s) => s.players));
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('玩家設定'),
         centerTitle: true,
-        elevation: 0,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
+            // ───────────────────── 新增玩家輸入 ─────────────────────
             TextField(
               controller: _nameCtrl,
               decoration: const InputDecoration(
@@ -58,7 +40,9 @@ class _SetupPageState extends ConsumerState<SetupPage> {
             ),
             const SizedBox(height: 12),
             ElevatedButton(onPressed: _addPlayer, child: const Text('加入玩家')),
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
+
+            // ───────────────────── 玩家列表 ─────────────────────
             Expanded(
               child: ListView.builder(
                 itemCount: players.length,
@@ -67,12 +51,22 @@ class _SetupPageState extends ConsumerState<SetupPage> {
                   title: Text(players[i].name),
                   trailing: IconButton(
                     icon: const Icon(Icons.delete),
-                    onPressed: () => _removePlayer(i),
+                    onPressed: () =>
+                        ref.read(gameControllerProvider.notifier).removePlayer(i),
                   ),
                 ),
               ),
             ),
+
+            // ───────────────────── Lady 開關 ─────────────────────
+            SwitchListTile(
+              value: _ladyEnabled,
+              onChanged: (v) => setState(() => _ladyEnabled = v),
+              title: const Text('啟用湖中女神（建議 9-10 人開啟）'),
+            ),
             const SizedBox(height: 12),
+
+            // ───────────────────── 開始遊戲 ─────────────────────
             FilledButton(
               onPressed: players.length >= 5 ? _startGame : null,
               child: const Text('開始發牌'),
@@ -80,6 +74,27 @@ class _SetupPageState extends ConsumerState<SetupPage> {
           ],
         ),
       ),
+    );
+  }
+
+  void _addPlayer() {
+    final name = _nameCtrl.text.trim();
+    if (name.isEmpty) return;
+    ref.read(gameControllerProvider.notifier).addPlayer(name);
+    _nameCtrl.clear();
+  }
+
+  void _startGame() {
+    final controller = ref.read(gameControllerProvider.notifier);
+    controller.setLadyEnabled(_ladyEnabled);
+
+    final players = ref.read(gameControllerProvider).players;
+    final roles = RoleFactory.rolesForCount(players.length)..shuffle();
+    controller.assignRoles(roles);
+
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (_) => const RevealPage()),
     );
   }
 
