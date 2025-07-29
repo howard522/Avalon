@@ -3,12 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../controllers/game_controller.dart';
 import '../models/team_size_factory.dart';
-import '../pages/reminder_page.dart';
-import 'vote_page.dart';
+import '../widgets/round_token_bar.dart';
+import '../widgets/medieval_button.dart';
+import '../models/player.dart';
 
 class ProposalPage extends ConsumerStatefulWidget {
-  const ProposalPage({Key? key}) : super(key: key);
-
+  const ProposalPage({super.key});
   @override
   ConsumerState<ProposalPage> createState() => _ProposalPageState();
 }
@@ -23,317 +23,171 @@ class _ProposalPageState extends ConsumerState<ProposalPage> {
     final round = state.goodScore + state.evilScore + 1;
     const totalRounds = 5;
 
-    final teamSizes = List.generate(
-      totalRounds,
-      (i) => TeamSizeFactory.teamSize(players.length, i + 1),
-    );
+    // 5 回合所需人數
+    final teamSizes =
+        List.generate(totalRounds, (i) => TeamSizeFactory.teamSize(players.length, i + 1));
     final teamSizeThisRound = teamSizes[round - 1];
 
     return Scaffold(
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+        child: DecoratedBox(
+          decoration: const BoxDecoration(
+            image: DecorationImage(
+              image: AssetImage('assets/images/textures/bulletin_board.png'),
+              fit: BoxFit.cover,
+            ),
+          ),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _HeaderBar(
-                round: round,
-                leaderName: players[state.leaderIndex].name,
-                goodScore: state.goodScore,
-                evilScore: state.evilScore,
-                onReminderTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const ReminderPage()),
-                  );
-                },
+              // ────────────── Header（卷軸 + Token）──────────────
+              _RoundHeaderBar(round: round, needCount: teamSizeThisRound),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(12, 4, 12, 8),
+                child: RoundTokenBar(
+                  playerCount: players.length,
+                  missionHistory: state.missionHistory,
+                ),
               ),
-              const SizedBox(height: 12),
-              _buildRoundScale(
-                context: context,
-                teamSizes: teamSizes,
-                currentRound: round,
-                missionHistory: state.missionHistory,
-              ),
-              const SizedBox(height: 20),
-              Text(
-                '選擇本回合隊伍（需 ${teamSizeThisRound} 人）',
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              const SizedBox(height: 12),
+
+              // ────────────── 玩家選擇 Grid ──────────────
               Expanded(
-                child: SingleChildScrollView(
-                  child: Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: List.generate(players.length, (i) {
-                      final sel = _selected.contains(i);
-                      return FilterChip(
-                        label: Text(players[i].name),
-                        selected: sel,
-                        onSelected: (v) {
-                          setState(() {
-                            if (v) {
-                              if (_selected.length < teamSizeThisRound) {
-                                _selected.add(i);
-                              }
-                            } else {
-                              _selected.remove(i);
-                            }
-                          });
-                        },
-                        selectedColor: Theme.of(context)
-                            .colorScheme
-                            .primary
-                            .withOpacity(.25),
-                        showCheckmark: false,
-                        avatar: CircleAvatar(
-                          radius: 10,
-                          backgroundColor: sel
-                              ? Theme.of(context).colorScheme.primary
-                              : Colors.grey[400],
-                          child: Text(
-                            players[i].name.characters.first.toUpperCase(),
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: sel ? Colors.white : Colors.black87,
-                            ),
-                          ),
-                        ),
-                      );
-                    }),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  child: GridView.count(
+                    crossAxisCount: 2,
+                    childAspectRatio: 3.5,
+                    mainAxisSpacing: 8,
+                    crossAxisSpacing: 8,
+                    children: [
+                      for (int i = 0; i < 10; i++)
+                        i < players.length
+                            ? _PlayerTile(
+                                player: players[i],
+                                selected: _selected.contains(i),
+                                onTap: () {
+                                  setState(() {
+                                    if (_selected.contains(i)) {
+                                      _selected.remove(i);
+                                    } else if (_selected.length < teamSizeThisRound) {
+                                      _selected.add(i);
+                                    }
+                                  });
+                                },
+                              )
+                            : const SizedBox.shrink(),
+                    ],
                   ),
                 ),
               ),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: _selected.length == teamSizeThisRound
-                          ? () {
-                              ref
-                                  .read(gameControllerProvider.notifier)
-                                  .proposeTeam(_selected);
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => const VotePage(),
-                                ),
-                              );
-                            }
-                          : null,
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        child: Text(
-                          '送審 (${_selected.length}/$teamSizeThisRound)',
-                          style: const TextStyle(fontSize: 16),
-                        ),
-                      ),
+
+              // ────────────── 動作按鈕 ──────────────
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                child: Column(
+                  children: [
+                    MedievalButton(
+                      label: '送審 (${_selected.length}/$teamSizeThisRound)',
+                      enabled: _selected.length == teamSizeThisRound,
+                      onPressed: () {
+                        if (_selected.length != teamSizeThisRound) return;
+                        ref.read(gameControllerProvider.notifier).proposeTeam(_selected);
+                        Navigator.pushNamed(context, '/vote');
+                      },
                     ),
-                  ),
-                  const SizedBox(width: 12),
-                  IconButton.filledTonal(
-                    tooltip: '清除',
-                    onPressed: _selected.isEmpty
-                        ? null
-                        : () => setState(() => _selected.clear()),
-                    icon: const Icon(Icons.refresh),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 4),
-              Center(
-                child: TextButton.icon(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const ReminderPage(),
-                      ),
-                    );
-                  },
-                  icon: const Icon(Icons.visibility),
-                  label: const Text('查看身份（防呆）'),
+                    const SizedBox(height: 8),
+                    MedievalButton(
+                      label: '清空',
+                      enabled: _selected.isNotEmpty,
+                      onPressed: () => setState(() => _selected.clear()),
+                    ),
+                    const SizedBox(height: 6),
+                    TextButton.icon(
+                      onPressed: () {
+                        Navigator.pushNamed(context, '/reminder'); // 你的 ReminderPage 路由
+                      },
+                      icon: const Icon(Icons.visibility),
+                      label: const Text('查看身份（防呆）'),
+                    ),
+                  ],
                 ),
               ),
             ],
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildRoundScale({
-    required BuildContext context,
-    required List<int> teamSizes,
-    required int currentRound,
-    required List<bool> missionHistory,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('回合隊伍規模 / 結果',
-            style: Theme.of(context).textTheme.titleMedium),
-        const SizedBox(height: 8),
-        Wrap(
-          spacing: 8,
-          children: List.generate(teamSizes.length, (i) {
-            final roundNumber = i + 1;
-            Color border = Colors.grey[400]!;
-            Color? fill;
-            Widget? resultIcon;
-
-            if (i < missionHistory.length) {
-              final isSuccess = missionHistory[i];
-              fill = isSuccess ? Colors.green[100] : Colors.red[100];
-              resultIcon = Icon(
-                isSuccess ? Icons.check : Icons.close,
-                size: 18,
-                color: isSuccess ? Colors.green[700] : Colors.red[700],
-              );
-            } else if (roundNumber == currentRound) {
-              fill = Colors.blue[50];
-            }
-
-            return AnimatedContainer(
-              duration: const Duration(milliseconds: 250),
-              padding:
-                  const EdgeInsets.symmetric(vertical: 6, horizontal: 10),
-              decoration: BoxDecoration(
-                color: fill,
-                border: Border.all(color: border),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    '$roundNumber: ${teamSizes[i]}人',
-                    style: const TextStyle(fontSize: 14),
-                  ),
-                  if (resultIcon != null) ...[
-                    const SizedBox(width: 4),
-                    resultIcon,
-                  ],
-                ],
-              ),
-            );
-          }),
-        ),
-      ],
     );
   }
 }
 
-class _HeaderBar extends StatelessWidget {
+// ───────────────────────────────────────────────────────────────
+// Header：卷軸背景 + 文字
+// ───────────────────────────────────────────────────────────────
+class _RoundHeaderBar extends StatelessWidget {
   final int round;
-  final String leaderName;
-  final int goodScore;
-  final int evilScore;
-  final VoidCallback onReminderTap;
-
-  const _HeaderBar({
-    Key? key,
-    required this.round,
-    required this.leaderName,
-    required this.goodScore,
-    required this.evilScore,
-    required this.onReminderTap,
-  }) : super(key: key);
+  final int needCount;
+  const _RoundHeaderBar({required this.round, required this.needCount});
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+    return SizedBox(
+      height: 80,
+      child: Stack(
+        alignment: Alignment.center,
         children: [
-          // 左側資訊
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '第 $round 回合',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  '領隊：$leaderName',
-                  style: Theme.of(context).textTheme.bodyMedium,
-                ),
-                const SizedBox(height: 4),
-                Row(
-                  children: [
-                    _scoreChip(
-                      label: '好人',
-                      value: goodScore,
-                      color: Colors.green,
-                    ),
-                    const SizedBox(width: 6),
-                    _scoreChip(
-                      label: '壞人',
-                      value: evilScore,
-                      color: Colors.red,
-                    ),
-                  ],
-                ),
-              ],
-            ),
+          Image.asset(
+            'assets/images/decor/banner_scroll_small.png',
+            fit: BoxFit.contain,
+            width: double.infinity,
+            height: double.infinity,
           ),
-          Column(
-            children: [
-              IconButton(
-                tooltip: '查看身份',
-                onPressed: onReminderTap,
-                icon: const Icon(Icons.visibility),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _scoreChip({
-    required String label,
-    required int value,
-    required Color color,
-  }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        color: color.withOpacity(.1),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withOpacity(.4)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          CircleAvatar(
-            radius: 6,
-            backgroundColor: color,
-          ),
-          const SizedBox(width: 4),
           Text(
-            '$label $value',
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: _darken(color),
+            '第 $round 回合 ｜ 需 $needCount 人',
+            style: const TextStyle(
+              fontFamily: 'MedievalSharp',
+              fontSize: 24,
+              letterSpacing: 1.2,
             ),
           ),
         ],
       ),
     );
   }
+}
 
-  Color _darken(Color c, [double amount = .22]) {
-    final hsl = HSLColor.fromColor(c);
-    final l = (hsl.lightness - amount).clamp(0.0, 1.0);
-    return hsl.withLightness(l).toColor();
+// ───────────────────────────────────────────────────────────────
+// Player 木牌
+// ───────────────────────────────────────────────────────────────
+class _PlayerTile extends StatelessWidget {
+  final Player player;
+  final bool selected;
+  final VoidCallback onTap;
+  const _PlayerTile({
+    required this.player,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final bg = selected
+        ? 'assets/images/plaques/wood_plaque_dark.png'
+        : 'assets/images/plaques/wood_plaque_light.png';
+
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        decoration: BoxDecoration(
+          image: DecorationImage(image: AssetImage(bg), fit: BoxFit.fill),
+        ),
+        alignment: Alignment.center,
+        child: Text(
+          player.name,
+          style: const TextStyle(
+            fontFamily: 'MedievalSharp',
+            fontSize: 18,
+          ),
+        ),
+      ),
+    );
   }
 }
