@@ -123,7 +123,7 @@ class _ProposalPageState extends ConsumerState<ProposalPage> {
                     ),
                     const SizedBox(height: 8),
                     _PlaqueButton(
-                      label: '查看身份（防呆）',
+                      label: '查看自己身份',
                       enabled: true,
                       onTap: () {
                         Navigator.push(

@@ -79,7 +79,7 @@ class _MissionVoteRevealPageState extends ConsumerState<MissionVoteRevealPage> {
                 children: [
                   ...revealed.map((t) => _Token(imagePath: t)),
                   for (int i = 0; i < hidden; i++)
-                    const _Token(imagePath: 'assets/images/token_hidden.png'),
+                    const _Token(imagePath: 'assets/images/tokens/token_hidden.png'),
                 ],
               ),
               const SizedBox(height: 32),
@@ -108,11 +108,11 @@ class _MissionVoteRevealPageState extends ConsumerState<MissionVoteRevealPage> {
   }) {
     final list = <String>[
       for (int i = 0; i < successVotes; i++)
-        'assets/images/token_success.png',
-      for (int i = 0; i < failVotes; i++) 'assets/images/token_fail.png',
+        'assets/images/tokens/token_success.png',
+      for (int i = 0; i < failVotes; i++) 'assets/images/tokens/token_fail.png',
     ];
     while (list.length < total) {
-      list.add('assets/images/token_hidden.png');
+      list.add('assets/images/tokens/token_hidden.png');
     }
     return list;
   }
