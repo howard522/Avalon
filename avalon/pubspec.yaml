@@ -46,10 +46,14 @@ flutter:
 
   # 資產
   assets:
+    - assets/images/
+    - assets/images/round_tokens/
+    - assets/images/buttons/
     - assets/images/icons/
     - assets/images/textures/
     - assets/images/cards/
     - assets/images/tokens/
     - assets/images/roles/
     - assets/images/plaques/
+    - assets/images/decor/
 
