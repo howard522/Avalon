@@ -1,3 +1,5 @@
+// lib/controllers/game_controller.dart
+
 import 'dart:math';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -5,10 +7,9 @@ import '../models/game_state.dart';
 import '../models/player.dart';
 import '../models/role.dart';
 
-/// 正確的寫法：閉包要帶 ref
-final gameControllerProvider = StateNotifierProvider<GameController, GameState>(
-  (ref) => GameController(),
-);
+/// 遊戲控制器 Provider
+final gameControllerProvider =
+    StateNotifierProvider<GameController, GameState>((ref) => GameController());
 
 class GameController extends StateNotifier<GameState> {
   GameController() : super(const GameState());
@@ -35,7 +36,6 @@ class GameController extends StateNotifier<GameState> {
       for (var i = 0; i < state.players.length; i++)
         state.players[i].copyWith(role: roles[i]),
     ];
-
     final n = assigned.length;
     final randomLeader = Random().nextInt(n);
     final initialLadyHolder =
@@ -84,9 +84,11 @@ class GameController extends StateNotifier<GameState> {
 
   // ───────────────────────── Quest 投票 ─────────────────────────
   void submitMissionVote(bool success) {
+    // 累加本回合的投票結果
     final updated = List<bool>.from(state.missionVotes)..add(success);
     state = state.copyWith(missionVotes: updated);
 
+    // 如果所有隊員都已投票，進行結果處理
     if (updated.length >= state.proposedTeam.length) {
       final successCount = updated.where((v) => v).length;
       final failCount = updated.length - successCount;
@@ -94,34 +96,39 @@ class GameController extends StateNotifier<GameState> {
       // 清空當回合暫存
       state = state.copyWith(missionVotes: <bool>[]);
 
-      // 記錄歷史（成功 true / 失敗 false）
-      final history = List<bool>.from(state.missionHistory)
-        ..add(successCount > failCount);
-      state = state.copyWith(missionHistory: history);
-
+      // 使用統一邏輯記錄歷史與分數
       _recordMissionResult(successCount, failCount);
     }
   }
 
   void _recordMissionResult(int successCount, int failCount) {
     final round = state.goodScore + state.evilScore + 1;
+    // 第 4 回合（7 人以上）需要 2 張失敗才算任務失敗，其餘只要 1 張即可
     final failThreshold = (round == 4 && state.players.length >= 7) ? 2 : 1;
     final missionSuccess = failCount < failThreshold;
 
+    // 1) 記錄歷史結果
+    final newHistory = List<bool>.from(state.missionHistory)
+      ..add(missionSuccess);
+    // 2) 更新分數
     final newGood = state.goodScore + (missionSuccess ? 1 : 0);
     final newEvil = state.evilScore + (missionSuccess ? 0 : 1);
 
-    // 遊戲是否結束
+    // 串接新的狀態
+    // 如果好人達 3 勝：進入刺殺階段
     if (newGood >= 3) {
       state = state.copyWith(
+        missionHistory: newHistory,
         goodScore: newGood,
         evilScore: newEvil,
         phase: GamePhase.assassinate,
       );
       return;
     }
+    // 如果壞人達 3 勝：直接結算
     if (newEvil >= 3) {
       state = state.copyWith(
+        missionHistory: newHistory,
         goodScore: newGood,
         evilScore: newEvil,
         phase: GamePhase.result,
@@ -129,11 +136,11 @@ class GameController extends StateNotifier<GameState> {
       return;
     }
 
-    // 湖中女神條件
+    // 否則，更新到下一階段（Lake 或 Proposal）
     final canEnterLady = state.ladyEnabled && round >= 2 && round <= 4;
-
     if (canEnterLady) {
       state = state.copyWith(
+        missionHistory: newHistory,
         goodScore: newGood,
         evilScore: newEvil,
         phase: GamePhase.lady,
@@ -142,6 +149,7 @@ class GameController extends StateNotifier<GameState> {
       );
     } else {
       state = state.copyWith(
+        missionHistory: newHistory,
         goodScore: newGood,
         evilScore: newEvil,
         phase: GamePhase.proposal,
@@ -161,7 +169,8 @@ class GameController extends StateNotifier<GameState> {
 
   // ───────────────────────── 刺客 ─────────────────────────
   void assassinate(int targetIndex) {
-    final merlinIndex = state.players.indexWhere((p) => p.role is Merlin);
+    final merlinIndex =
+        state.players.indexWhere((p) => p.role is Merlin);
     final success = targetIndex == merlinIndex;
     state = state.copyWith(
       assassinationTargetIndex: targetIndex,

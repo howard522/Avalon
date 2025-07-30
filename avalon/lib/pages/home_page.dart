@@ -35,7 +35,7 @@ class HomePage extends ConsumerWidget {
               width: 200,
               child: ElevatedButton.icon(
                 icon: ImageIcon(
-                  AssetImage('assets/images/home_icon_start.png'),
+                  AssetImage('assets/images/icons/home_icon_start.png'),
                   size: 24,
                 ),
                 label: const Padding(
@@ -57,7 +57,7 @@ class HomePage extends ConsumerWidget {
               width: 200,
               child: OutlinedButton.icon(
                 icon: ImageIcon(
-                  AssetImage('assets/images/home_icon_rules.png'),
+                  AssetImage('assets/images/icons/home_icon_rules.png'),
                   size: 24,
                 ),
                 label: const Padding(
