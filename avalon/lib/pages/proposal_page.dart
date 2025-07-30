@@ -23,16 +23,16 @@ class _ProposalPageState extends ConsumerState<ProposalPage> {
     final state = ref.watch(gameControllerProvider);
     final players = state.players;
     final round = state.goodScore + state.evilScore + 1;
+    final leaderName = players[state.leaderIndex].name;
     const totalRounds = 5;
 
-    // 計算每回合所需人數
+    // 每回合所需人數
     final teamSizes = List.generate(
       totalRounds,
       (i) => TeamSizeFactory.teamSize(players.length, i + 1),
     );
     final needCount = teamSizes[round - 1];
 
-    // 全螢幕木板背景
     return Scaffold(
       body: DecoratedBox(
         decoration: const BoxDecoration(
@@ -44,24 +44,31 @@ class _ProposalPageState extends ConsumerState<ProposalPage> {
         child: SafeArea(
           child: Column(
             children: [
-              // Header：卷軸標題 + TokenBar
+              // 1️⃣ 回合卷軸
               _RoundHeaderBar(round: round, needCount: needCount),
+              const SizedBox(height: 8),
+
+              // 2️⃣ 領隊卷軸
+              _LeaderScrollBar(leaderName: leaderName),
+              const SizedBox(height: 12),
+
+              // 3️⃣ TokenBar
               Padding(
-                padding: const EdgeInsets.fromLTRB(12, 4, 12, 8),
+                padding: const EdgeInsets.symmetric(horizontal: 12),
                 child: RoundTokenBar(
                   playerCount: players.length,
                   missionHistory: state.missionHistory,
                 ),
               ),
 
-              // 玩家選擇 Grid（2×5）
+              // 4️⃣ 玩家選擇 Grid（2×5）
               Expanded(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 12, vertical: 8),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   child: GridView.count(
                     crossAxisCount: 2,
-                    childAspectRatio: 4, // 更寬扁
+                    childAspectRatio: 4,
                     mainAxisSpacing: 8,
                     crossAxisSpacing: 8,
                     children: List.generate(10, (i) {
@@ -87,9 +94,9 @@ class _ProposalPageState extends ConsumerState<ProposalPage> {
                 ),
               ),
 
-              // 動作按鈕：送審 / 清空 / 查看身份
+              // 5️⃣ 動作按鈕
               Padding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
                 child: Column(
                   children: [
                     _PlaqueButton(
@@ -138,7 +145,7 @@ class _ProposalPageState extends ConsumerState<ProposalPage> {
   }
 }
 
-/// Header：卷軸背景 + 第 X 回合｜需 N 人
+/// 回合卷軸：第 X 回合 ｜ 需 N 人
 class _RoundHeaderBar extends StatelessWidget {
   final int round;
   final int needCount;
@@ -175,6 +182,39 @@ class _RoundHeaderBar extends StatelessWidget {
   }
 }
 
+/// 領隊卷軸：領隊：XXX
+class _LeaderScrollBar extends StatelessWidget {
+  final String leaderName;
+  const _LeaderScrollBar({required this.leaderName});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 80,
+      width: double.infinity,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Image.asset(
+            'assets/images/decor/banner_scroll_small.png',
+            fit: BoxFit.contain,
+            width: double.infinity,
+            height: double.infinity,
+          ),
+          Text(
+            '領隊：$leaderName',
+            style: const TextStyle(
+              fontFamily: 'MedievalSharp',
+              fontSize: 24,
+              letterSpacing: 1.2,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 /// 單一玩家木牌
 class _PlayerTile extends StatelessWidget {
   final Player player;
@@ -188,10 +228,11 @@ class _PlayerTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // 未選中用暗版，選中用亮版
     final image = AssetImage(
       selected
-          ? 'assets/images/plaques/wood_plaque_dark.png'
-          : 'assets/images/plaques/wood_plaque_light.png',
+          ? 'assets/images/plaques/wood_plaque_light.png'
+          : 'assets/images/plaques/wood_plaque_dark.png',
     );
 
     return GestureDetector(
@@ -206,7 +247,8 @@ class _PlayerTile extends StatelessWidget {
           style: TextStyle(
             fontFamily: 'MedievalSharp',
             fontSize: 20,
-            color: selected ? Colors.white70 : Colors.black87,
+            // 如果暗牌文字不明顯可以進一步調整：
+            color: selected ? Colors.black87 : Colors.white70,
           ),
         ),
       ),
