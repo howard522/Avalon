@@ -4,12 +4,12 @@ class AppTheme {
   // 色彩定義
   static const Color parchment = Color(0xFFF3E5AB);
   static const Color inkBrown = Color(0xFF4B3621);
-  static const Color copper   = Color(0xFFC09A5D);
+  static const Color copper = Color(0xFFC09A5D);
   static const Color darkWood = Color(0xFF3E2C1C);
 
   // 字體
   static const String fontTitle = 'MedievalSharp';
-  static const String fontBody  = 'Merriweather';
+  static const String fontBody = 'Merriweather';
 
   static ThemeData medieval() {
     return ThemeData(
@@ -57,8 +57,8 @@ class AppTheme {
         ),
       ),
 
-      // Card 主題
-      cardTheme: CardTheme(
+      // Card 主題（改為 CardThemeData）
+      cardTheme: CardThemeData(
         color: parchment,
         elevation: 4,
         shape: RoundedRectangleBorder(
