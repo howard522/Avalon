@@ -1,9 +1,11 @@
+// lib/pages/reminder_page.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../controllers/game_controller.dart';
 import '../services/role_info_service.dart';
 import '../widgets/role_identity_card.dart';
+import '../widgets/wood_plaque_button.dart';
 
 class ReminderPage extends ConsumerStatefulWidget {
   const ReminderPage({Key? key}) : super(key: key);
@@ -23,8 +25,6 @@ class _ReminderPageState extends ConsumerState<ReminderPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('查看身份'),
-        centerTitle: true,
-        elevation: 0,
       ),
       body: AnimatedSwitcher(
         duration: const Duration(milliseconds: 240),
@@ -70,12 +70,11 @@ class _ReminderPageState extends ConsumerState<ReminderPage> {
               separatorBuilder: (_, __) => const SizedBox(height: 10),
               itemBuilder: (_, i) {
                 final name = state.players[i].name;
-                return ElevatedButton(
-                  onPressed: () => setState(() => _selectedIndex = i),
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                  ),
-                  child: Text(name, style: const TextStyle(fontSize: 18)),
+                return WoodPlaqueButton(
+                  label: name,
+                  onTap: () => setState(() => _selectedIndex = i),
+                  height: 54,
+                  margin: const EdgeInsets.symmetric(vertical: 4),
                 );
               },
             ),

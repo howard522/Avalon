@@ -1,8 +1,10 @@
+// lib/pages/setup_page.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../controllers/game_controller.dart';
 import '../models/role_factory.dart';
+import '../widgets/wood_plaque_button.dart';
 import 'reveal_page.dart';
 
 class SetupPage extends ConsumerStatefulWidget {
@@ -14,7 +16,7 @@ class SetupPage extends ConsumerStatefulWidget {
 
 class _SetupPageState extends ConsumerState<SetupPage> {
   final _nameCtrl = TextEditingController();
-  bool _ladyEnabled = true; // ← 預設開啟
+  bool _ladyEnabled = true;
 
   @override
   Widget build(BuildContext context) {
@@ -23,13 +25,11 @@ class _SetupPageState extends ConsumerState<SetupPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('玩家設定'),
-        centerTitle: true,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            // ───────────────────── 新增玩家輸入 ─────────────────────
             TextField(
               controller: _nameCtrl,
               decoration: const InputDecoration(
@@ -39,37 +39,40 @@ class _SetupPageState extends ConsumerState<SetupPage> {
               onSubmitted: (_) => _addPlayer(),
             ),
             const SizedBox(height: 12),
-            ElevatedButton(onPressed: _addPlayer, child: const Text('加入玩家')),
+            SizedBox(
+              width: double.infinity,
+              child: WoodPlaqueButton(label: '加入玩家', onTap: _addPlayer),
+            ),
             const SizedBox(height: 20),
-
-            // ───────────────────── 玩家列表 ─────────────────────
             Expanded(
               child: ListView.builder(
                 itemCount: players.length,
-                itemBuilder: (_, i) => ListTile(
-                  leading: Text('#${i + 1}'),
-                  title: Text(players[i].name),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.delete),
-                    onPressed: () =>
-                        ref.read(gameControllerProvider.notifier).removePlayer(i),
+                itemBuilder: (_, i) => Card(
+                  child: ListTile(
+                    leading: Text('#${i + 1}', style: Theme.of(context).textTheme.titleMedium),
+                    title: Text(players[i].name, style: Theme.of(context).textTheme.titleMedium),
+                    trailing: IconButton(
+                      icon: const Icon(Icons.delete, color: Colors.white70),
+                      onPressed: () =>
+                          ref.read(gameControllerProvider.notifier).removePlayer(i),
+                    ),
                   ),
                 ),
               ),
             ),
-
-            // ───────────────────── Lady 開關 ─────────────────────
             SwitchListTile(
               value: _ladyEnabled,
               onChanged: (v) => setState(() => _ladyEnabled = v),
               title: const Text('啟用湖中女神（建議 9-10 人開啟）'),
             ),
             const SizedBox(height: 12),
-
-            // ───────────────────── 開始遊戲 ─────────────────────
-            FilledButton(
-              onPressed: players.length >= 5 ? _startGame : null,
-              child: const Text('開始發牌'),
+            SizedBox(
+              width: double.infinity,
+              child: WoodPlaqueButton(
+                label: '開始發牌',
+                enabled: players.length >= 5,
+                onTap: players.length >= 5 ? _startGame : null,
+              ),
             ),
           ],
         ),

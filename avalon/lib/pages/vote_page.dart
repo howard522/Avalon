@@ -1,9 +1,11 @@
+// lib/pages/vote_page.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../controllers/game_controller.dart';
 import '../models/game_state.dart';
 import '../widgets/progress_panel.dart';
+import '../widgets/wood_plaque_button.dart';
 import 'proposal_page.dart';
 import 'quest_page.dart';
 import 'result_page.dart';
@@ -23,32 +25,31 @@ class VotePage extends ConsumerWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
-              '數到「三」一起投票！\n\n'
-              '👍 表示同意此隊伍\n'
-              '👎 表示拒絕此隊伍\n\n'
-              '主持人倒數：3…2…1…',
+              '數到「三」一起投票！\n\n👍 表示同意此隊伍\n👎 表示拒絕此隊伍\n\n主持人倒數：3…2…1…',
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 40),
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                ElevatedButton.icon(
-                  icon: const Icon(Icons.thumb_up),
-                  label: const Text('同意'),
-                  onPressed: () {
-                    controller.voteTeam(true);
-                    _navigateNext(context, ref);
-                  },
+                Expanded(
+                  child: WoodPlaqueButton(
+                    label: '同意',
+                    onTap: () {
+                      controller.voteTeam(true);
+                      _navigateNext(context, ref);
+                    },
+                  ),
                 ),
-                ElevatedButton.icon(
-                  icon: const Icon(Icons.thumb_down),
-                  label: const Text('拒絕'),
-                  onPressed: () {
-                    controller.voteTeam(false);
-                    _navigateNext(context, ref);
-                  },
+                const SizedBox(width: 16),
+                Expanded(
+                  child: WoodPlaqueButton(
+                    label: '拒絕',
+                    onTap: () {
+                      controller.voteTeam(false);
+                      _navigateNext(context, ref);
+                    },
+                  ),
                 ),
               ],
             ),

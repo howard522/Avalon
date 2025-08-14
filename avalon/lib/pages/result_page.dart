@@ -1,8 +1,10 @@
+// lib/pages/result_page.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../controllers/game_controller.dart';
 import 'setup_page.dart';
 import 'roles_overview_page.dart';
+import '../widgets/wood_plaque_button.dart';
 
 class ResultPage extends ConsumerWidget {
   const ResultPage({Key? key}) : super(key: key);
@@ -21,8 +23,6 @@ class ResultPage extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('本局結果'),
-        centerTitle: true,
-        elevation: 0,
         actions: [
           IconButton(
             tooltip: '角色一覽',
@@ -61,36 +61,39 @@ class ResultPage extends ConsumerWidget {
             ],
             const SizedBox(height: 24),
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                ElevatedButton(
-                  onPressed: () {
-                    notifier.resetKeepPlayers();
-                    Navigator.pushAndRemoveUntil(
-                      context,
-                      MaterialPageRoute(builder: (_) => const SetupPage()),
-                      (route) => false,
-                    );
-                  },
-                  child: const Text('再來一局'),
+                Expanded(
+                  child: WoodPlaqueButton(
+                    label: '再來一局',
+                    onTap: () {
+                      notifier.resetKeepPlayers();
+                      Navigator.pushAndRemoveUntil(
+                        context,
+                        MaterialPageRoute(builder: (_) => const SetupPage()),
+                        (route) => false,
+                      );
+                    },
+                  ),
                 ),
-                ElevatedButton(
-                  onPressed: () {
-                    notifier.reset();
-                    Navigator.pushAndRemoveUntil(
-                      context,
-                      MaterialPageRoute(builder: (_) => const SetupPage()),
-                      (route) => false,
-                    );
-                  },
-                  child: const Text('重新開始'),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: WoodPlaqueButton(
+                    label: '重新開始',
+                    onTap: () {
+                      notifier.reset();
+                      Navigator.pushAndRemoveUntil(
+                        context,
+                        MaterialPageRoute(builder: (_) => const SetupPage()),
+                        (route) => false,
+                      );
+                    },
+                  ),
                 ),
               ],
             ),
             const SizedBox(height: 12),
             Text(
-              '「再來一局」保留玩家名單並重新分配角色；\n'
-              '「重新開始」清空所有玩家。',
+              '「再來一局」保留玩家名單並重新分配角色；\n「重新開始」清空所有玩家。',
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodySmall,
             ),
