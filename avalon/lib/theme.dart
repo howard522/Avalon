@@ -7,15 +7,18 @@ class AppTheme {
   static const String fontTitle = 'MedievalSharp';
   static const String fontBody = 'Merriweather';
 
+  ThemeData _base() => ThemeData(
+        useMaterial3: true,
+        scaffoldBackgroundColor: Colors
+            .transparent, // 為何：讓全域 AppBackground 可見（避免白底蓋掉木板）
+        fontFamily: fontBody,
+        visualDensity: VisualDensity.standard,
+        brightness: Brightness.light,
+      );
+
   static ThemeData medieval() {
-    final base = ThemeData(
-      useMaterial3: true,
-      // 關鍵：讓 Scaffold 透明，避免蓋住全域背景
-      scaffoldBackgroundColor: Colors.transparent,
-      fontFamily: fontBody,
-      visualDensity: VisualDensity.standard,
-      brightness: Brightness.light,
-    );
+    final self = AppTheme();
+    final base = self._base();
 
     return base.copyWith(
       colorScheme: ColorScheme.fromSeed(
@@ -24,13 +27,16 @@ class AppTheme {
         primary: copper,
       ),
       textTheme: const TextTheme(
-        headlineLarge: TextStyle(fontFamily: fontTitle, color: Colors.white, fontSize: 32, height: 1.2),
-        headlineMedium: TextStyle(fontFamily: fontTitle, color: Colors.white, fontSize: 26),
+        headlineLarge: TextStyle(
+            fontFamily: fontTitle, color: Colors.white, fontSize: 32, height: 1.2),
+        headlineMedium:
+            TextStyle(fontFamily: fontTitle, color: Colors.white, fontSize: 26),
         titleLarge: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w600),
         titleMedium: TextStyle(color: Colors.white70, fontSize: 18),
         bodyLarge: TextStyle(color: Colors.white, fontSize: 16, height: 1.5),
         bodyMedium: TextStyle(color: Colors.white70, fontSize: 14, height: 1.45),
-        labelLarge: TextStyle(fontFamily: fontTitle, color: Colors.white, fontSize: 18, letterSpacing: 1.1),
+        labelLarge: TextStyle(
+            fontFamily: fontTitle, color: Colors.white, fontSize: 18, letterSpacing: 1.1),
       ),
       appBarTheme: const AppBarTheme(
         backgroundColor: Colors.transparent,
@@ -40,7 +46,7 @@ class AppTheme {
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: Colors.white.withOpacity(0.12), // 木板上可讀
+        fillColor: Colors.white.withOpacity(0.12),
         border: _roundedBorder(Colors.white24),
         enabledBorder: _roundedBorder(Colors.white24),
         focusedBorder: _roundedBorder(copper),
@@ -50,7 +56,8 @@ class AppTheme {
         hintStyle: const TextStyle(color: Colors.white54),
         contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       ),
-      cardTheme: CardTheme(
+      // 🔧 修正點：CardTheme -> CardThemeData（Web 要求）
+      cardTheme: CardThemeData(
         color: Colors.black.withOpacity(0.24),
         elevation: 1,
         shape: RoundedRectangleBorder(
@@ -63,7 +70,8 @@ class AppTheme {
         style: ElevatedButton.styleFrom(
           backgroundColor: copper,
           foregroundColor: Colors.black,
-          textStyle: const TextStyle(fontFamily: fontTitle, fontSize: 16, fontWeight: FontWeight.bold),
+          textStyle:
+              const TextStyle(fontFamily: fontTitle, fontSize: 16, fontWeight: FontWeight.bold),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           minimumSize: const Size(64, 44),
           elevation: 0,
